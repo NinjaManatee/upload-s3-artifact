@@ -116,10 +116,8 @@ for name in ${ARTIFACT_PATHS[@]}; do
         continue
     fi
 
-    if [[ -n "$RUNNER_DEBUG" ]]; then
-        echo "::debug::Contents of path"
-        echo "$(tree -a "$name" 2>&1)"
-    fi
+    echo "::debug::Contents of path"
+    echo "::debug::$(tree -a "$name" 2>&1)"
 
     # check whether the path is an exclude and delete files in exclude from TMPARTIFACT
     if [[ "$name" == ^!.* ]]; then
@@ -140,7 +138,7 @@ for name in ${ARTIFACT_PATHS[@]}; do
         echo "Adding '$name'"
 
         echo "::debug::Check if $name exists"
-        if [[ -f "$name" ]]; then
+        if [[ -e "$name" ]]; then
             echo "::debug::$name exists"
             mkdir -p "$TMPARTIFACT/$(dirname "$name")"
             cp -r "$name" "$TMPARTIFACT/$(dirname "$name")"

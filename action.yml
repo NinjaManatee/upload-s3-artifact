@@ -93,8 +93,14 @@ runs:
     - name: Upload artifact
       shell: bash
       run: |
+        ACTION_PATH=$GITHUB_ACTION_PATH
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          # Need to make sure path in ACTION_PATH is a unix path
+          ACTION_PATH=$(cygpath -u "$ACTION_PATH")
+        fi
+
         # read inputs
-        $GITHUB_ACTION_PATH/scripts/read_inputs.sh
+        $ACTION_PATH/scripts/read_inputs.sh
 
         # run script
-        $GITHUB_ACTION_PATH/scripts/main.sh
+        $ACTION_PATH/scripts/main.sh

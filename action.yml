@@ -94,7 +94,7 @@ runs:
       shell: bash
       run: |
         # read inputs
-        ${{ github.action_path }}/scripts/read_inputs.sh
+        scripts/read_inputs.sh
 
         # run script
-        ${{ github.action_path }}/scripts/main.sh
+        scripts/main.sh

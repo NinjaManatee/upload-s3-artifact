@@ -11,6 +11,11 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 #endregion
 
 #region read input arguments
+for arg in "$@"
+do
+    echo "$arg"
+done
+
 INPUT_NAME="$1"
 INPUT_PATH="$2"
 INPUT_IF_NO_FILES_FOUND="$3"

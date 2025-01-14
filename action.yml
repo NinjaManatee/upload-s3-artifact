@@ -127,14 +127,8 @@ runs:
         echo "ACTION_PATH=$ACTION_PATH"
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # Need to make sure path in ACTION_PATH is a unix path
-          echo "Forcing $ACTION_PATH to be a unix path"
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
-          echo "$ACTION_PATH should be a unix path"
         fi
-
-        echo "::debug::ACTION_PATH=$ACTION_PATH"
-
-        cd "$ACTION_PATH"
 
         # run script
         $ACTION_PATH/scripts/main.sh \

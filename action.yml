@@ -29,7 +29,7 @@ inputs:
       Duration after which returned URL will expire in days. 0 means using default retention. This is only for the 
       presigned URL returned by the action and printed to the job summary. Controlling when an artifact is actually 
       deleted is done in the AWS S3 bucket configuration.
-  
+
       Minimum 1 day.
       Maximum 90 days unless changed from the repository settings page.
       default is 7 days
@@ -88,7 +88,7 @@ outputs:
       SHA-256 digest for the artifact that was just uploaded. Empty if the artifact upload failed.
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Upload artifact
       shell: bash
@@ -130,4 +130,17 @@ runs:
         fi
 
         # run script
-        $ACTION_PATH/scripts/main.sh
+        $ACTION_PATH/scripts/main.sh \
+          INPUT_NAME \
+          INPUT_PATH \
+          INPUT_IF_NO_FILES_FOUND \
+          INPUT_RETENTION_DAYS \
+          INPUT_COMPRESSION_LEVEL \
+          INPUT_OVERWRITE \
+          INPUT_INCLUDE_HIDDEN_FILES \
+          RUNNER_OS \
+          GITHUB_REPOSITORY \
+          GITHUB_RUN_ID \
+          ENV_S3_ARTIFACTS_BUCKET \
+          ENV_AWS_ACCESS_KEY_ID \
+          ENV_AWS_SECRET_ACCESS_KEY

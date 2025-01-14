@@ -134,6 +134,10 @@ runs:
             if [[ "$RUNNER_OS" = "Windows" ]]; then
                 cmd //c tree "$ACTION_PATH" /f
             else
+                echo "$(tree -a '$ACTION_PATH/../../../../' 2>&1)"
+                echo "$(tree -a '$ACTION_PATH/../../../' 2>&1)"
+                echo "$(tree -a '$ACTION_PATH/../../' 2>&1)"
+                echo "$(tree -a '$ACTION_PATH/../' 2>&1)"
                 echo "$(tree -a '$ACTION_PATH' 2>&1)"
             fi
         fi

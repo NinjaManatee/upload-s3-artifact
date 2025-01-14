@@ -130,23 +130,16 @@ runs:
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
         fi
 
-        if [[ -n "$RUNNER_DEBUG" ]]; then
-            echo "::debug::Contents of our temporary artifact build $ACTION_PATH"
-            if [[ "$RUNNER_OS" = "Windows" ]]; then
-                cmd //c tree "$ACTION_PATH" /f
-            else
-                echo "$(tree -a '$ACTION_PATH/../../../../../../' 2>&1)"
-                echo "$(tree -a '$ACTION_PATH/../../../../../' 2>&1)"
-                echo "$(tree -a '$ACTION_PATH/../../../../' 2>&1)"
-                echo "$(tree -a '$ACTION_PATH/../../../' 2>&1)"
-                echo "$(tree -a '$ACTION_PATH/../../' 2>&1)"
-                echo "$(tree -a '$ACTION_PATH/../' 2>&1)"
-                echo "$(tree -a '$ACTION_PATH' 2>&1)"
-            fi
-        fi
+        echo "$BASH_SOURCE"
+
+        ls
+
+        echo "::debug::GITHUB_ACTION_PATH=$ACTION_PATH"
+
+        cd "$ACTION_PATH"
 
         # run script
-        $ACTION_PATH/scripts/main.sh \
+        main.sh \
           $INPUT_NAME \
           $INPUT_PATH \
           $INPUT_IF_NO_FILES_FOUND \

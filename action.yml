@@ -94,7 +94,7 @@ runs:
       shell: bash
       run: |
         # read inputs
-        scripts/read_inputs.sh
+        $GITHUB_ACTION_PATH/scripts/read_inputs.sh
 
         # run script
-        scripts/main.sh
+        $GITHUB_ACTION_PATH/scripts/main.sh

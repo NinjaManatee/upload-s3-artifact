@@ -29,6 +29,21 @@ GITHUB_RUN_ID="$10"
 ENV_S3_ARTIFACTS_BUCKET="$11"
 ENV_AWS_ACCESS_KEY_ID="$12"
 ENV_AWS_SECRET_ACCESS_KEY="$13"
+
+echo "::debug::Inputs:"
+echo "::debug::    name:                      $INPUT_NAME"
+echo "::debug::    path:                      $INPUT_PATH"
+echo "::debug::    if-no-files-found:         $INPUT_IF_NO_FILES_FOUND"
+echo "::debug::    retention-days:            $INPUT_RETENTION_DAYS"
+echo "::debug::    compression-level:         $INPUT_COMPRESSION_LEVEL"
+echo "::debug::    overwrite:                 $INPUT_OVERWRITE"
+echo "::debug::    include-hidden-files:      $INPUT_INCLUDE_HIDDEN_FILES"
+echo "::debug::    runner.os:                 $RUNNER_OS"
+echo "::debug::    github.repository:         $GITHUB_REPOSITORY"
+echo "::debug::    github.run-id:             $GITHUB_RUN_ID"
+echo "::debug::    S3_ARTIFACTS_BUCKET:       $ENV_S3_ARTIFACTS_BUCKET"
+echo "::debug::    AWS_ACCESS_KEY_ID:         $ENV_AWS_ACCESS_KEY_ID"
+echo "::debug::    AWS_SECRET_ACCESS_KEY:     $ENV_AWS_SECRET_ACCESS_KEY"
 #endregion
 
 #region validate input variables

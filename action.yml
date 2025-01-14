@@ -124,16 +124,19 @@ runs:
         echo "::debug::    include-hidden-files:  $INPUT_INCLUDE_HIDDEN_FILES"
 
         ACTION_PATH=$GITHUB_ACTION_PATH
+        echo "ACTION_PATH=$ACTION_PATH"
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # Need to make sure path in ACTION_PATH is a unix path
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
         fi
 
         if [[ -n "$RUNNER_DEBUG" ]]; then
-            echo "::debug::Contents of our temporary artifact build"
+            echo "::debug::Contents of our temporary artifact build $ACTION_PATH"
             if [[ "$RUNNER_OS" = "Windows" ]]; then
                 cmd //c tree "$ACTION_PATH" /f
             else
+                echo "$(tree -a '$ACTION_PATH/../../../../../../' 2>&1)"
+                echo "$(tree -a '$ACTION_PATH/../../../../../' 2>&1)"
                 echo "$(tree -a '$ACTION_PATH/../../../../' 2>&1)"
                 echo "$(tree -a '$ACTION_PATH/../../../' 2>&1)"
                 echo "$(tree -a '$ACTION_PATH/../../' 2>&1)"

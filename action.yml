@@ -130,6 +130,9 @@ runs:
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
         fi
 
+        # make the script executable
+        chmod u+x $ACTION_PATH/scripts/main.sh
+
         # run script
         $ACTION_PATH/scripts/main.sh \
           $INPUT_NAME \

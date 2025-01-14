@@ -130,16 +130,12 @@ runs:
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
         fi
 
-        echo "$BASH_SOURCE"
-
-        ls
-
-        echo "::debug::GITHUB_ACTION_PATH=$ACTION_PATH"
+        echo "::debug::GITHUB_ACTION_PATH=$GITHUB_ACTION_PATH"
 
         cd "$ACTION_PATH"
 
         # run script
-        main.sh \
+        $GITHUB_ACTION_PATH/main.sh \
           $INPUT_NAME \
           $INPUT_PATH \
           $INPUT_IF_NO_FILES_FOUND \

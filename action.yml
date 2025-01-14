@@ -129,6 +129,15 @@ runs:
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
         fi
 
+        if [[ -n "$RUNNER_DEBUG" ]]; then
+            echo "::debug::Contents of our temporary artifact build"
+            if [[ "$RUNNER_OS" = "Windows" ]]; then
+                cmd //c tree "$ACTION_PATH" /f
+            else
+                echo "$(tree -a '$ACTION_PATH' 2>&1)"
+            fi
+        fi
+
         # run script
         $ACTION_PATH/scripts/main.sh \
           $INPUT_NAME \

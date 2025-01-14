@@ -13,31 +13,31 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 #region validate input variables
 # validate script input variables
 if [[ "$INPUT_NAME" == "" ]]; then
-    echo "::error::The values of 'NAME' input is not specified"
+    echo "::error::The values of 'INPUT_NAME' input is not specified"
 fi
 
 if [[ "$INPUT_PATH" == "" ]]; then
-    echo "::error::The values of 'PATH' input is not specified"
+    echo "::error::The values of 'INPUT_PATH' input is not specified"
 fi
 
 if [[ "$INPUT_IF_NO_FILES_FOUND" == "" ]]; then
-    echo "::error::The values of 'IF_NO_FILES_FOUND' input is not specified"
+    echo "::error::The values of 'INPUT_IF_NO_FILES_FOUND' input is not specified"
 fi
 
 if [[ "$INPUT_RETENTION_DAYS" == "" ]]; then
-    echo "::error::The values of 'RETENTION_DAYS' input is not specified"
+    echo "::error::The values of 'INPUT_RETENTION_DAYS' input is not specified"
 fi
 
 if [[ "$INPUT_COMPRESSION_LEVEL" == "" ]]; then
-    echo "::error::The values of 'COMPRESSION_LEVEL' input is not specified"
+    echo "::error::The values of 'INPUT_COMPRESSION_LEVEL' input is not specified"
 fi
 
 if [[ "$INPUT_OVERWRITE" == "" ]]; then
-    echo "::error::The values of 'overwrite' input is not specified"
+    echo "::error::The values of 'INPUT_OVERWRITE' input is not specified"
 fi
 
 if [[ "$INPUT_INCLUDE_HIDDEN_FILES" == "" ]]; then
-    echo "::error::The values of 'INCLUDE_HIDDEN_FILES' input is not specified"
+    echo "::error::The values of 'INPUT_INCLUDE_HIDDEN_FILES' input is not specified"
 fi
 
 # validate github actions variables
@@ -66,7 +66,7 @@ fi
 #endregion
 
 #region create temp directories
-# Create our temporary directory parent for our artifacts
+# create our temporary directory parent for our artifacts
 TMP_ARTIFACT="$RUNNER_TEMP/upload-s3-artifact"
 if [[ "$RUNNER_OS" == "Windows" ]]; then
     # On some windows runners, the path for TMP_ARTIFACT is a mix of windows and unix path (both / and \), which
@@ -75,14 +75,14 @@ if [[ "$RUNNER_OS" == "Windows" ]]; then
 fi
 mkdir -p "$TMP_ARTIFACT"
 
-# Create a unique directory for this particular action run
+# create a unique directory for this particular action run
 TMPDIR="$(mktemp -d -p "$TMP_ARTIFACT" "upload.XXXXXXXX")"
 echo "::debug::Created temporary directory $TMPDIR"
 
-# Assign the tarball file name for future use
+# assign the tarball file name for future use
 TMPTAR="$TMPDIR/artifacts.tgz"
 
-# Create a path within our temporary directory to collect all the artifacts
+# create a path within our temporary directory to collect all the artifacts
 TMPARTIFACT="$TMPDIR/artifacts"
 mkdir -p "$TMPARTIFACT"
 echo "::debug::Created artifact directory $TMPARTIFACT"

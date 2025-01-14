@@ -115,13 +115,13 @@ runs:
 
         # print inputs for debugging
         echo "::debug::Inputs:"
-        echo "::debug::\tname: $INPUT_NAME"
-        echo "::debug::\tpath: $INPUT_PATH"
-        echo "::debug::\tif-no-files-found: $INPUT_IF_NO_FILES_FOUND"
-        echo "::debug::\tretention-days: $INPUT_RETENTION_DAYS"
-        echo "::debug::\tcompression-level: $INPUT_COMPRESSION_LEVEL"
-        echo "::debug::\toverwrite: $INPUT_OVERWRITE"
-        echo "::debug::\tinclude-hidden-files: $INPUT_INCLUDE_HIDDEN_FILES"
+        echo "::debug::    name:                  $INPUT_NAME"
+        echo "::debug::    path:                  $INPUT_PATH"
+        echo "::debug::    if-no-files-found:     $INPUT_IF_NO_FILES_FOUND"
+        echo "::debug::    retention-days:        $INPUT_RETENTION_DAYS"
+        echo "::debug::    compression-level:     $INPUT_COMPRESSION_LEVEL"
+        echo "::debug::    overwrite:             $INPUT_OVERWRITE"
+        echo "::debug::    include-hidden-files:  $INPUT_INCLUDE_HIDDEN_FILES"
 
         ACTION_PATH=$GITHUB_ACTION_PATH
         if [[ "${{ runner.os }}" == "Windows" ]]; then
@@ -131,16 +131,16 @@ runs:
 
         # run script
         $ACTION_PATH/scripts/main.sh \
-          INPUT_NAME \
-          INPUT_PATH \
-          INPUT_IF_NO_FILES_FOUND \
-          INPUT_RETENTION_DAYS \
-          INPUT_COMPRESSION_LEVEL \
-          INPUT_OVERWRITE \
-          INPUT_INCLUDE_HIDDEN_FILES \
-          RUNNER_OS \
-          GITHUB_REPOSITORY \
-          GITHUB_RUN_ID \
-          ENV_S3_ARTIFACTS_BUCKET \
-          ENV_AWS_ACCESS_KEY_ID \
-          ENV_AWS_SECRET_ACCESS_KEY
+          $INPUT_NAME \
+          $INPUT_PATH \
+          $INPUT_IF_NO_FILES_FOUND \
+          $INPUT_RETENTION_DAYS \
+          $INPUT_COMPRESSION_LEVEL \
+          $INPUT_OVERWRITE \
+          $INPUT_INCLUDE_HIDDEN_FILES \
+          $RUNNER_OS \
+          $GITHUB_REPOSITORY \
+          $GITHUB_RUN_ID \
+          $ENV_S3_ARTIFACTS_BUCKET \
+          $ENV_AWS_ACCESS_KEY_ID \
+          $ENV_AWS_SECRET_ACCESS_KEY

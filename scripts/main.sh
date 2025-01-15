@@ -160,6 +160,7 @@ for name in ${ARTIFACT_PATHS[@]}; do
             echo "::debug::$name exists"
             mkdir -p "$TMPARTIFACT/$(dirname "$name")"
             cp -r "$name" "$TMPARTIFACT/$(dirname "$name")"
+            echo "::debug::$name copied to $TMPARTIFACT/$(dirname "$name")"
         else
             case "$INPUT_IF_NO_FILES_FOUND" in
             "warn")
@@ -181,9 +182,9 @@ done
 if [[ -n "$RUNNER_DEBUG" ]]; then
     echo "::debug::Contents of our temporary artifact build"
     if [[ "$RUNNER_OS" = "Windows" ]]; then
-        cmd //c tree "$TMPDIR" /f
+        cmd //c tree "$TMPARTIFACT" /f
     else
-        echo "$(tree -a '$TMPDIR' 2>&1)"
+        echo "$(tree -a '$TMPARTIFACT' 2>&1)"
     fi
 fi
 #endregion

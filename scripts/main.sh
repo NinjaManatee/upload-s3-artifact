@@ -1,6 +1,10 @@
 #!/bin/bash
 # Zips files/directories into a tarball and uploads it to AWS S3.
 #
+# TODO: List script inputs
+#
+# To run without uploading to AWS, set DRY_RUN to true.
+#
 # based on open-turo/actions-s3-artifact
 # see: https://github.com/open-turo/actions-s3-artifact/blob/main/upload/action.yaml
 
@@ -98,18 +102,20 @@ if [[ "$GITHUB_RUN_ID" == "" ]]; then
     ERROR=true
 fi
 
-# check whether AWS credentials are specified and warn if they aren't
-if [[ "$ENV_AWS_ACCESS_KEY_ID" == "" || "$ENV_AWS_SECRET_ACCESS_KEY" == "" ]]; then
-    echo "::warn::AWS_ACCESS_KEY_ID and/or AWS_SECRET_ACCESS_KEY is missing from environment variables."
+if [[ "$DRY_RUN" != "true" ]]; then
+    # check whether AWS credentials are specified and warn if they aren't
+    if [[ "$ENV_AWS_ACCESS_KEY_ID" == "" || "$ENV_AWS_SECRET_ACCESS_KEY" == "" ]]; then
+        echo "::warn::AWS_ACCESS_KEY_ID and/or AWS_SECRET_ACCESS_KEY is missing from environment variables."
+    fi
+
+    # check whether S3_ARTIFACTS_BUCKET is defined
+    if [[ "$ENV_S3_ARTIFACTS_BUCKET" == "" ]]; then
+        echo "::error::S3_ARTIFACTS_BUCKET is missing from environment variables."
+        ERROR=true
+    fi
 fi
 
-# check whether S3_ARTIFACTS_BUCKET is defined
-if [[ "$ENV_S3_ARTIFACTS_BUCKET" == "" ]]; then
-    echo "::error::S3_ARTIFACTS_BUCKET is missing from environment variables."
-    ERROR=true
-fi
-
-if [[ $ERROR ]]; then
+if [[ "$ERROR" =="true" ]]; then
     echo "::error::Input error(s) - exiting"
     exit 1
 fi
@@ -241,7 +247,9 @@ S3URI="${S3URI%/}/$KEY"
 
 echo "::debug::Uploading '$TMPTAR' to S3 '$S3URI'"
 echo "::debug::aws s3 cp '$TMPTAR' '$S3URI'"
-aws s3 cp "$TMPTAR" "$S3URI"
+if [[ "$DRY_RUN" != "true" ]]; then
+    aws s3 cp "$TMPTAR" "$S3URI"
+fi
 echo "::debug::File uploaded to AWS S3"
 #endregion
 
@@ -249,9 +257,12 @@ echo "::debug::File uploaded to AWS S3"
 # create presigned URL to download the artifact. AWS CLI expects expiration to be in seconds
 EXPIRES_IN=$((INPUT_RETENTION_DAYS * 24 * 60 * 60))
 echo "::debug::PRESIGNED_URL=\$\(aws s3 presign '$S3URI' --expires-in $EXPIRES_IN\)"
-# TODO: Presigned URL doesn't appear to be working correctly
-PRESIGNED_URL=$(aws s3 presign "$S3URI" --expires-in $EXPIRES_IN)
-echo "::debug::Presigned URL created: '$PRESIGNED_URL'"
+
+if [[ "$DRY_RUN" != "true" ]]; then
+    # TODO: Presigned URL doesn't appear to be working correctly
+    PRESIGNED_URL=$(aws s3 presign "$S3URI" --expires-in $EXPIRES_IN)
+    echo "::debug::Presigned URL created: '$PRESIGNED_URL'"
+fi
 
 # create outputs and summary
 echo "artifact-url=$PRESIGNED_URL" >> $GITHUB_OUTPUT

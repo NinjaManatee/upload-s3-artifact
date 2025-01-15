@@ -11,11 +11,6 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 #endregion
 
 #region read input arguments
-for arg in "$@"
-do
-    echo "$arg"
-done
-
 INPUT_NAME="$1"
 INPUT_PATH="$2"
 INPUT_IF_NO_FILES_FOUND="$3"
@@ -198,8 +193,8 @@ if ! [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
 fi
 
 # create tar
-echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -C '$TMPARTIFACT' --transform='s/^\.\///' --show-transformed ."
-GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" --transform='s/^\.\///' --show-transformed .
+echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -xC '$TMPARTIFACT' ."
+GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -xC "$TMPARTIFACT" .
 
 # TODO: Delete this when it is no longer necessary
 # original tar command from other repo. Am I missing something important? What does --transform and

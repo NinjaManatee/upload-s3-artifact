@@ -25,6 +25,7 @@ export DRY_RUN=true
 # variables needed, but are usually defined by the GitHub runner
 export RUNNER_TEMP="$TEMP"
 export RUNNER_DEBUG=true
+export GITHUB_OUTPUT=/dev/null
 #endregion
 
 #region generate test files

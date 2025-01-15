@@ -1,9 +1,23 @@
 #!/bin/bash
 # Zips files/directories into a tarball and uploads it to AWS S3.
 #
-# TODO: List script inputs
+# Usage: main.sh
 #
-# To run without uploading to AWS, set DRY_RUN to true.
+# The following environment variables must be defined:
+#   - INPUT_NAME - The name of the artifact
+#   - INPUT_PATH - The path to be archived
+#   - INPUT_IF_NO_FILES_FOUND - what should be done when no files are found (warn, ignore, error)
+#   - INPUT_RETENTION_DAYS - the number of days the presigned URL should be valid for (number greater than 1)
+#   - INPUT_COMPRESSION_LEVEL - the compression level to use for tar (1-9)
+#   - INPUT_OVERWRITE - whether to overwrite existing archive (true/false)
+#   - INPUT_INCLUDE_HIDDEN_FILES - whether to include hidden files in the artifact (true/false)
+#   - RUNNER_OS - the OS of the runner
+#   - GITHUB_REPOSITORY - the repository the artifact is associated with
+#   - GITHUB_RUN_ID - the run ID the artifact is associated with
+#   - ENV_S3_ARTIFACTS_BUCKET - the name of the AWS S3 bucket to use
+#   - ENV_AWS_ACCESS_KEY_ID - the AWS access key ID (optional if uploading to a public S3 bucket)
+#   - ENV_AWS_SECRET_ACCESS_KEY - the AWS secret access key (optional if uploading to a public S3 bucket)
+#   - DRY_RUN - whether to run without uploading to AWS (optional, set to true to enable dry run)
 #
 # based on open-turo/actions-s3-artifact
 # see: https://github.com/open-turo/actions-s3-artifact/blob/main/upload/action.yaml
@@ -14,23 +28,23 @@ set -e
 #region import scripts
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
-. "$DIR/encoding.sh"
+source "$DIR/encoding.sh"
 #endregion
 
 #region read input arguments
-INPUT_NAME="$1"
-INPUT_PATH="$2"
-INPUT_IF_NO_FILES_FOUND="$3"
-INPUT_RETENTION_DAYS="$4"
-INPUT_COMPRESSION_LEVEL="$5"
-INPUT_OVERWRITE="$6"
-INPUT_INCLUDE_HIDDEN_FILES="$7"
-RUNNER_OS="$8"
-GITHUB_REPOSITORY="$9"
-GITHUB_RUN_ID="${10}"
-ENV_S3_ARTIFACTS_BUCKET="${11}"
-ENV_AWS_ACCESS_KEY_ID="${12}"
-ENV_AWS_SECRET_ACCESS_KEY="${13}"
+# INPUT_NAME="$1"
+# INPUT_PATH="$2"
+# INPUT_IF_NO_FILES_FOUND="$3"
+# INPUT_RETENTION_DAYS="$4"
+# INPUT_COMPRESSION_LEVEL="$5"
+# INPUT_OVERWRITE="$6"
+# INPUT_INCLUDE_HIDDEN_FILES="$7"
+# RUNNER_OS="$8"
+# GITHUB_REPOSITORY="$9"
+# GITHUB_RUN_ID="${10}"
+# ENV_S3_ARTIFACTS_BUCKET="${11}"
+# ENV_AWS_ACCESS_KEY_ID="${12}"
+# ENV_AWS_SECRET_ACCESS_KEY="${13}"
 
 echo "::debug::Inputs:"
 echo "::debug::    name:                      $INPUT_NAME"
@@ -115,13 +129,16 @@ if [[ "$DRY_RUN" != "true" ]]; then
     fi
 fi
 
-if [[ "$ERROR" =="true" ]]; then
+if [[ "$ERROR" == "true" ]]; then
     echo "::error::Input error(s) - exiting"
     exit 1
+else
+    echo "::debug::Validation complete"
 fi
 #endregion
 
 #region create temp directories
+echo "::debug::Creating temp directories"
 # create our temporary directory parent for our artifacts
 TMP_ARTIFACT="$RUNNER_TEMP/upload-s3-artifact"
 if [[ "$RUNNER_OS" == "Windows" ]]; then
@@ -134,7 +151,7 @@ echo "::debug::The artifact directory is $TMP_ARTIFACT"
 
 # create a unique directory for this particular action run
 TMPDIR="$(mktemp -d -p "$TMP_ARTIFACT" "upload.XXXXXXXX")"
-mkdir -p $TMPDIR
+mkdir -p "$TMPDIR"
 echo "::debug::Created temporary directory $TMPDIR"
 
 # assign the tarball file name for future use
@@ -147,7 +164,7 @@ echo "::debug::Created artifact directory $TMPARTIFACT"
 #endregion
 
 #region populate artifact directory
-# Read the path string into a bash array for easy looping
+echo "::debug::Reading the path string into an array"
 read -a ARTIFACT_PATHS <<<"$INPUT_PATH"
 echo "::debug::Inputs read: $ARTIFACT_PATHS"
 
@@ -269,7 +286,7 @@ echo "artifact-url=$PRESIGNED_URL" >> $GITHUB_OUTPUT
 ARTIFACT_HASH=$(echo -n $TMPARTIFACT | sha256sum)
 echo "artifact-urlartifact-digest=$(echo -n $TMPARTIFACT | sha256sum)" >> $GITHUB_OUTPUT
 echo "::debug::The presigned URL is $PRESIGNED_URL"
-echo "::debug::The artifact sha256 is $ARTIFACT_HASH
+echo "::debug::The artifact sha256 is $ARTIFACT_HASH"
 
 NUM_BYTES=$(stat --printf="%s" "$TMPARTIFACT"
 FORMATTED_BYTES=$(numfmt --to=iec $NUM_BYTES)
@@ -278,5 +295,9 @@ echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" 
 
 #region clean up temp dir
 # TODO: move to clean up step?
-rm -rf $TMP_ARTIFACT
+if [[ "DRY_RUN" != "true" ]]; then
+    rm -rf "$TMP_ARTIFACT"
+else
+    echo "$TMP_ARTIFACT"
+fi
 #endregion

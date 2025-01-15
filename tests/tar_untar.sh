@@ -60,10 +60,3 @@ tar -xzvf "$ARTIFACT_PATH" -C "$OUTPUT_PATH"
 echo "Comparing folders"
 diff -r $INPUT_PATH "$OUTPUT_PATH/$INPUT_PATH"
 #endregion
-
-#region clean up
-echo "Cleaning up"
-rm -rf ./tmp
-rm -rf ./newTmp
-echo "Done"
-#endregion

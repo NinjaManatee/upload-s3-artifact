@@ -198,8 +198,8 @@ if ! [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
 fi
 
 # create tar
-echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -C '$TMPARTIFACT' ."
-GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" .
+echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -C '$TMPARTIFACT' --transform='s/^\.\///' --show-transformed ."
+GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" --transform='s/^\.\///' --show-transformed .
 
 # TODO: Delete this when it is no longer necessary
 # original tar command from other repo. Am I missing something important? What does --transform and

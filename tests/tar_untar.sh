@@ -45,12 +45,14 @@ echo "Running main.sh"
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 source "$DIR/../scripts/main.sh"
+source "./tmp.txt"
 echo "artifact path: $ARTIFACT_PATH"
 #endregion
 
 #region untar archive to a different directory
 echo "Testing untar"
 OUTPUT_PATH="./newTemp"
+mkdir -p "$OUTPUT_PATH"
 tar -xzvf "$ARTIFACT_PATH" -C "$OUTPUT_PATH"
 #endregion
 

@@ -300,9 +300,9 @@ echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" 
 
 #region clean up temp dir
 # TODO: move to clean up step?
-if [[ "DRY_RUN" != "true" ]]; then
+if [[ "$DRY_RUN" != "true" ]]; then
     rm -rf "$TMP_ARTIFACT"
 else
-    export ARTIFACT_PATH="$TMP_ARTIFACT"
+    printf "ARTIFACT_PATH=$TMPTAR" > tmp.txt
 fi
 #endregion

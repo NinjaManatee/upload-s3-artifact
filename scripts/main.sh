@@ -191,7 +191,7 @@ for name in ${ARTIFACT_PATHS[@]}; do
             echo "::debug::$name exists and has files"
             echo "::debug::Adding contents of $name"
             if [[ "$RUNNER_OS" == "Windows" ]]; then
-                echo "::debug::$(cmd //c tree "tmp" /f)"
+                cmd //c tree //f "$name"
             else
                 echo "::debug::$(tree -a 'tmp' 2>&1)"
             fi
@@ -222,7 +222,7 @@ if [[ -n "$RUNNER_DEBUG" ]]; then
     echo "::debug::Contents of our temporary directory"
     if [[ "$RUNNER_OS" = "Windows" ]]; then
         # TODO: Can I make this debug somehow?
-        cmd //c tree "$TMPDIR" /f
+        cmd //c tree //f "$TMPDIR"
     else
         echo "::debug::$(tree -a '$TMPDIR' 2>&1)"
     fi

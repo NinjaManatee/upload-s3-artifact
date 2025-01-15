@@ -108,6 +108,7 @@ if [[ "$RUNNER_OS" == "Windows" ]]; then
     TMP_ARTIFACT=$(cygpath -u "$TMP_ARTIFACT")
 fi
 mkdir -p "$TMP_ARTIFACT"
+echo "::debug::The artifact directory is TMP_ARTIFACT"
 
 # create a unique directory for this particular action run
 TMPDIR="$(mktemp -d -p "$TMP_ARTIFACT" "upload.XXXXXXXX")"
@@ -153,7 +154,7 @@ for name in ${ARTIFACT_PATHS[@]}; do
             rm -rf "$name"
         fi
     else
-        echo "Adding '$name'"
+        echo "::debug::Adding '$name'"
 
         echo "::debug::Check if $name exists"
         if [[ -e "$name" ]]; then
@@ -180,11 +181,11 @@ done
 
 # List out everything in the temporary path
 if [[ -n "$RUNNER_DEBUG" ]]; then
-    echo "::debug::Contents of our temporary artifact build"
+    echo "::debug::Contents of our temporary directory"
     if [[ "$RUNNER_OS" = "Windows" ]]; then
-        cmd //c tree "$TMPARTIFACT" /f
+        cmd //c tree "$TMPDIR" /f
     else
-        echo "$(tree -a '$TMPARTIFACT' 2>&1)"
+        echo "$(tree -a '$TMPDIR' 2>&1)"
     fi
 fi
 #endregion
@@ -192,13 +193,13 @@ fi
 #region tarball the temporary path into a single object
 # exclude hidden files, if necessary
 if ! [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
-    echo "::debug::Excluding hidden files."
+    echo "::debug::Excluding hidden files"
     exclude=-"-exclude='.*'"
 fi
 
 # create tar
-echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -xC '$TMPARTIFACT' ."
-GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -xC "$TMPARTIFACT" .
+echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvfx '$TMPTAR' -C '$TMPARTIFACT' ."
+GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvfx "$TMPTAR" -C "$TMPARTIFACT" .
 
 # TODO: Delete this when it is no longer necessary
 # original tar command from other repo. Am I missing something important? What does --transform and
@@ -227,7 +228,7 @@ ENCODED_FILENAME="$(urlencode $INPUT_NAME).tgz"
 KEY="$REPO/$RUN_ID/$ENCODED_FILENAME"
 S3URI="${S3URI%/}/$KEY"
 
-echo "Uploading '$TMPTAR' to S3 '$S3URI'"
+echo "::debug::Uploading '$TMPTAR' to S3 '$S3URI'"
 echo "::debug::aws s3 cp '$TMPTAR' '$S3URI'"
 aws s3 cp "$TMPTAR" "$S3URI"
 echo "::debug::File uploaded to AWS S3"
@@ -242,15 +243,18 @@ PRESIGNED_URL=$(aws s3 presign "$S3URI" --expires-in $EXPIRES_IN)
 echo "::debug::Presigned URL created: '$PRESIGNED_URL'"
 
 # create outputs and summary
-echo "artifact-url=$PRESIGNED_URL" >>$GITHUB_OUTPUT
-echo "artifact-urlartifact-digest=$(echo -n $TMPARTIFACT | sha256sum)" >>$GITHUB_OUTPUT
-NUM_BYTES=$(stat --printf="%s" "$TMPARTIFACT")
-echo "$NUM_BYTES"
+echo "artifact-url=$PRESIGNED_URL" >> $GITHUB_OUTPUT
+ARTIFACT_HASH=$(echo -n $TMPARTIFACT | sha256sum)
+echo "artifact-urlartifact-digest=$(echo -n $TMPARTIFACT | sha256sum)" >> $GITHUB_OUTPUT
+echo "::debug::The presigned URL is $PRESIGNED_URL"
+echo "::debug::The artifact sha256 is $ARTIFACT_HASH
+
+NUM_BYTES=$(stat --printf="%s" "$TMPARTIFACT"
 FORMATTED_BYTES=$(numfmt --to=iec $NUM_BYTES)
-echo "$FORMATTED_BYTES"
-echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" >>$GITHUB_STEP_SUMMARY
+echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" >> $GITHUB_STEP_SUMMARY
 #endregion
 
 #region clean up temp dir
+# TODO: move to clean up step?
 rm -rf $TMP_ARTIFACT
 #endregion

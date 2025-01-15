@@ -94,58 +94,46 @@ runs:
       shell: bash
       run: |
         # read inputs into variables
-        INPUT_NAME="${{ inputs.name }}"
-        INPUT_PATH="${{ inputs.path }}"
-        INPUT_IF_NO_FILES_FOUND="${{ inputs.if-no-files-found }}"
-        INPUT_RETENTION_DAYS="${{ inputs.retention-days }}"
-        INPUT_COMPRESSION_LEVEL="${{ inputs.compression-level }}"
-        INPUT_OVERWRITE="${{ inputs.overwrite }}"
-        INPUT_INCLUDE_HIDDEN_FILES="${{ inputs.include-hidden-files }}"
+        export INPUT_NAME="${{ inputs.name }}"
+        export INPUT_PATH="${{ inputs.path }}"
+        export INPUT_IF_NO_FILES_FOUND="${{ inputs.if-no-files-found }}"
+        export INPUT_RETENTION_DAYS="${{ inputs.retention-days }}"
+        export INPUT_COMPRESSION_LEVEL="${{ inputs.compression-level }}"
+        export INPUT_OVERWRITE="${{ inputs.overwrite }}"
+        export INPUT_INCLUDE_HIDDEN_FILES="${{ inputs.include-hidden-files }}"
 
         # read github actions variables
-        RUNNER_OS="${{ runner.os }}"
-        GITHUB_REPOSITORY="${{ github.repository }}"
-        GITHUB_RUN_ID="${{ github.run_id }}"
+        export RUNNER_OS="${{ runner.os }}"
+        export GITHUB_REPOSITORY="${{ github.repository }}"
+        export GITHUB_RUN_ID="${{ github.run_id }}"
 
         # read environment variables
         # TODO: Are these necessary since they are already environment variables?
-        ENV_S3_ARTIFACTS_BUCKET="${{ env.S3_ARTIFACTS_BUCKET }}"
-        ENV_AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
-        ENV_AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
+        export ENV_S3_ARTIFACTS_BUCKET="${{ env.S3_ARTIFACTS_BUCKET }}"
+        export ENV_AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
+        export ENV_AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
 
         # print inputs for debugging
         echo "::debug::Inputs:"
-        echo "::debug::    name:                  $INPUT_NAME"
-        echo "::debug::    path:                  $INPUT_PATH"
-        echo "::debug::    if-no-files-found:     $INPUT_IF_NO_FILES_FOUND"
-        echo "::debug::    retention-days:        $INPUT_RETENTION_DAYS"
-        echo "::debug::    compression-level:     $INPUT_COMPRESSION_LEVEL"
-        echo "::debug::    overwrite:             $INPUT_OVERWRITE"
-        echo "::debug::    include-hidden-files:  $INPUT_INCLUDE_HIDDEN_FILES"
+        echo "::debug::    name:                      $INPUT_NAME"
+        echo "::debug::    path:                      $INPUT_PATH"
+        echo "::debug::    if-no-files-found:         $INPUT_IF_NO_FILES_FOUND"
+        echo "::debug::    retention-days:            $INPUT_RETENTION_DAYS"
+        echo "::debug::    compression-level:         $INPUT_COMPRESSION_LEVEL"
+        echo "::debug::    overwrite:                 $INPUT_OVERWRITE"
+        echo "::debug::    include-hidden-files:      $INPUT_INCLUDE_HIDDEN_FILES"
+        echo "::debug::    runner.os:                 $RUNNER_OS"
+        echo "::debug::    github.repository:         $GITHUB_REPOSITORY"
+        echo "::debug::    github.run-id:             $GITHUB_RUN_ID"
+        echo "::debug::    S3_ARTIFACTS_BUCKET:       $ENV_S3_ARTIFACTS_BUCKET"
+        echo "::debug::    AWS_ACCESS_KEY_ID:         $ENV_AWS_ACCESS_KEY_ID"
+        echo "::debug::    AWS_SECRET_ACCESS_KEY:     $ENV_AWS_SECRET_ACCESS_KEY"
 
         ACTION_PATH=$GITHUB_ACTION_PATH
-        echo "ACTION_PATH=$ACTION_PATH"
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # Need to make sure path in ACTION_PATH is a unix path
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
         fi
 
-        echo "::debug::GITHUB_ACTION_PATH=$GITHUB_ACTION_PATH"
-
-        cd "$ACTION_PATH"
-
         # run script
-        $GITHUB_ACTION_PATH/main.sh \
-          $INPUT_NAME \
-          $INPUT_PATH \
-          $INPUT_IF_NO_FILES_FOUND \
-          $INPUT_RETENTION_DAYS \
-          $INPUT_COMPRESSION_LEVEL \
-          $INPUT_OVERWRITE \
-          $INPUT_INCLUDE_HIDDEN_FILES \
-          $RUNNER_OS \
-          $GITHUB_REPOSITORY \
-          $GITHUB_RUN_ID \
-          $ENV_S3_ARTIFACTS_BUCKET \
-          $ENV_AWS_ACCESS_KEY_ID \
-          $ENV_AWS_SECRET_ACCESS_KEY
+        $ACTION_PATH/scripts/main.sh

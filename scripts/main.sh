@@ -46,45 +46,56 @@ echo "::debug::    AWS_SECRET_ACCESS_KEY:     $ENV_AWS_SECRET_ACCESS_KEY"
 
 #region validate input variables
 # validate script input variables
+ERROR=false
 if [[ "$INPUT_NAME" == "" ]]; then
     echo "::error::The values of 'INPUT_NAME' input is not specified"
+    ERROR=true
 fi
 
 if [[ "$INPUT_PATH" == "" ]]; then
     echo "::error::The values of 'INPUT_PATH' input is not specified"
+    ERROR=true
 fi
 
 if [[ "$INPUT_IF_NO_FILES_FOUND" == "" ]]; then
     echo "::error::The values of 'INPUT_IF_NO_FILES_FOUND' input is not specified"
+    ERROR=true
 fi
 
 if [[ "$INPUT_RETENTION_DAYS" == "" ]]; then
     echo "::error::The values of 'INPUT_RETENTION_DAYS' input is not specified"
+    ERROR=true
 fi
 
 if [[ "$INPUT_COMPRESSION_LEVEL" == "" ]]; then
     echo "::error::The values of 'INPUT_COMPRESSION_LEVEL' input is not specified"
+    ERROR=true
 fi
 
 if [[ "$INPUT_OVERWRITE" == "" ]]; then
     echo "::error::The values of 'INPUT_OVERWRITE' input is not specified"
+    ERROR=true
 fi
 
 if [[ "$INPUT_INCLUDE_HIDDEN_FILES" == "" ]]; then
     echo "::error::The values of 'INPUT_INCLUDE_HIDDEN_FILES' input is not specified"
+    ERROR=true
 fi
 
 # validate github actions variables
 if [[ "$RUNNER_OS" == "" ]]; then
     echo "::error::The values of 'RUNNER_OS' GitHub variable is not specified"
+    ERROR=true
 fi
 
 if [[ "$GITHUB_REPOSITORY" == "" ]]; then
     echo "::error::The values of 'GITHUB_REPOSITORY' GitHub variable is not specified"
+    ERROR=true
 fi
 
 if [[ "$GITHUB_RUN_ID" == "" ]]; then
     echo "::error::The values of 'GITHUB_RUN_ID' GitHub variable is not specified"
+    ERROR=true
 fi
 
 # check whether AWS credentials are specified and warn if they aren't
@@ -95,6 +106,11 @@ fi
 # check whether S3_ARTIFACTS_BUCKET is defined
 if [[ "$ENV_S3_ARTIFACTS_BUCKET" == "" ]]; then
     echo "::error::S3_ARTIFACTS_BUCKET is missing from environment variables."
+    ERROR=true
+fi
+
+if [[ $ERROR ]]; then
+    echo "::error::Input error(s) - exiting"
     exit 1
 fi
 #endregion
@@ -108,10 +124,11 @@ if [[ "$RUNNER_OS" == "Windows" ]]; then
     TMP_ARTIFACT=$(cygpath -u "$TMP_ARTIFACT")
 fi
 mkdir -p "$TMP_ARTIFACT"
-echo "::debug::The artifact directory is TMP_ARTIFACT"
+echo "::debug::The artifact directory is $TMP_ARTIFACT"
 
 # create a unique directory for this particular action run
 TMPDIR="$(mktemp -d -p "$TMP_ARTIFACT" "upload.XXXXXXXX")"
+mkdir -p $TMPDIR
 echo "::debug::Created temporary directory $TMPDIR"
 
 # assign the tarball file name for future use
@@ -130,14 +147,6 @@ echo "::debug::Inputs read: $ARTIFACT_PATHS"
 
 # iterate through each artifact path and copy it to the temporary path
 for name in ${ARTIFACT_PATHS[@]}; do
-    if [[ -z "$name" ]]; then
-        echo "::debug::Skipping empty"
-        continue
-    fi
-
-    echo "::debug::Contents of path"
-    echo "::debug::$(tree -a "$name" 2>&1)"
-
     # check whether the path is an exclude and delete files in exclude from TMPARTIFACT
     if [[ "$name" == ^!.* ]]; then
         echo "::debug::Deleting $name"
@@ -154,24 +163,25 @@ for name in ${ARTIFACT_PATHS[@]}; do
             rm -rf "$name"
         fi
     else
-        echo "::debug::Adding '$name'"
-
-        echo "::debug::Check if $name exists"
-        if [[ -e "$name" ]]; then
-            echo "::debug::$name exists"
-            mkdir -p "$TMPARTIFACT/$(dirname "$name")"
-            cp -r "$name" "$TMPARTIFACT/$(dirname "$name")"
-            echo "::debug::$name copied to $TMPARTIFACT/$(dirname "$name")"
+        if [[ -e "$name" || -z "$name" ]]; then
+            echo "::debug::$name exists and has files"
+            echo "::debug::Adding contents of $name"
+            echo "::debug::$(tree -a "$name" 2>&1)"
+    
+            COPY_DDIR="$TMPARTIFACT/$(dirname "$name")"
+            mkdir -p $COPY_DIR
+            cp -r "$name" "$COPY_DIR"
+            echo "::debug::$name copied to $COPY_DIR"
         else
             case "$INPUT_IF_NO_FILES_FOUND" in
             "warn")
-                echo "::warn::$name does not exist"
+                echo "::warn::$name does not exist or is empty"
                 ;;
             "ignore")
-                echo "::debug::$name does not exist"
+                echo "::debug::$name does not exist or is empty"
                 ;;
             "error")
-                echo "::error::$name does not exist"
+                echo "::error::$name does not exist or is empty"
                 exit 1
                 ;;
             esac
@@ -183,9 +193,10 @@ done
 if [[ -n "$RUNNER_DEBUG" ]]; then
     echo "::debug::Contents of our temporary directory"
     if [[ "$RUNNER_OS" = "Windows" ]]; then
+        # TODO: Can I make this debug somehow?
         cmd //c tree "$TMPDIR" /f
     else
-        echo "$(tree -a '$TMPDIR' 2>&1)"
+        echo "::debug::$(tree -a '$TMPDIR' 2>&1)"
     fi
 fi
 #endregion
@@ -199,7 +210,7 @@ fi
 
 # create tar
 echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvfx '$TMPTAR' -C '$TMPARTIFACT' ."
-GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvfx "$TMPTAR" -C "$TMPARTIFACT" .
+GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" .
 
 # TODO: Delete this when it is no longer necessary
 # original tar command from other repo. Am I missing something important? What does --transform and

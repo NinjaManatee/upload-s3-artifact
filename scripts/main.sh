@@ -4,6 +4,9 @@
 # based on open-turo/actions-s3-artifact
 # see: https://github.com/open-turo/actions-s3-artifact/blob/main/upload/action.yaml
 
+# exit immediately if an error occurs
+set -e
+
 #region import scripts
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi

@@ -217,14 +217,14 @@ for name in ${ARTIFACT_PATHS[@]}; do
     fi
 done
 
-# List out everything in the temporary path
+# list out everything in the temporary path
 if [[ -n "$RUNNER_DEBUG" ]]; then
     echo "::debug::Contents of our temporary directory"
     if [[ "$RUNNER_OS" = "Windows" ]]; then
         # TODO: Can I make this debug somehow?
         cmd //c tree //f "$TMPDIR"
     else
-        echo "::debug::$(tree -a '$TMPDIR' 2>&1)"
+        echo "::debug::$(tree -a "$TMPDIR" 2>&1)"
     fi
 fi
 #endregion
@@ -237,7 +237,7 @@ if ! [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
 fi
 
 # create tar
-echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvfx '$TMPTAR' -C '$TMPARTIFACT' ."
+echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -C '$TMPARTIFACT' ."
 GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" .
 
 # TODO: Delete this when it is no longer necessary

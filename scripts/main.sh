@@ -248,7 +248,7 @@ GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" .
 # List the actual contents of the archive
 if [[ -n "$RUNNER_DEBUG" ]]; then
     echo "::debug::Artifact contents"
-    echo "$(tar -ztvf '$TMPTAR' 2>&1)"
+    echo "$(tar -ztvf "$TMPTAR" 2>&1)"
 fi
 #endregion
 
@@ -267,8 +267,8 @@ ENCODED_FILENAME="$(urlencode $INPUT_NAME).tgz"
 KEY="$REPO/$RUN_ID/$ENCODED_FILENAME"
 S3URI="${S3URI%/}/$KEY"
 
-echo "::debug::Uploading '$TMPTAR' to S3 '$S3URI'"
-echo "::debug::aws s3 cp '$TMPTAR' '$S3URI'"
+echo "::debug::Uploading \"$TMPTAR\" to S3 \"$S3URI\""
+echo "::debug::aws s3 cp \"$TMPTAR\" \"$S3URI\""
 if [[ "$DRY_RUN" != "true" ]]; then
     aws s3 cp "$TMPTAR" "$S3URI"
 fi
@@ -278,7 +278,7 @@ echo "::debug::File uploaded to AWS S3"
 #region generate outputs
 # create presigned URL to download the artifact. AWS CLI expects expiration to be in seconds
 EXPIRES_IN=$((INPUT_RETENTION_DAYS * 24 * 60 * 60))
-echo "::debug::PRESIGNED_URL=\$\(aws s3 presign '$S3URI' --expires-in $EXPIRES_IN\)"
+echo "::debug::PRESIGNED_URL=$\(aws s3 presign \"$S3URI\" --expires-in $EXPIRES_IN\)"
 
 if [[ "$DRY_RUN" != "true" ]]; then
     # TODO: Presigned URL doesn't appear to be working correctly

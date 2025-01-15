@@ -130,7 +130,6 @@ runs:
         echo "::debug::    AWS_SECRET_ACCESS_KEY:     $ENV_AWS_SECRET_ACCESS_KEY"
 
         ACTION_PATH=$GITHUB_ACTION_PATH
-        echo "ACTION_PATH=$ACTION_PATH"
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # Need to make sure path in ACTION_PATH is a unix path
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")

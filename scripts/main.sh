@@ -156,6 +156,7 @@ echo "::debug::Created temporary directory $TMPDIR"
 
 # assign the tarball file name for future use
 TMPTAR="$TMPDIR/artifacts.tgz"
+echo "::debug::Tarball path is $TMPTAR"
 
 # create a path within our temporary directory to collect all the artifacts
 TMPARTIFACT="$TMPDIR/artifacts"
@@ -165,7 +166,7 @@ echo "::debug::Created artifact directory $TMPARTIFACT"
 
 #region populate artifact directory
 echo "::debug::Reading the path string into an array"
-read -a ARTIFACT_PATHS <<<"$INPUT_PATH"
+read -a ARTIFACT_PATHS <<< "$INPUT_PATH"
 echo "::debug::Inputs read: $ARTIFACT_PATHS"
 
 # iterate through each artifact path and copy it to the temporary path
@@ -189,9 +190,13 @@ for name in ${ARTIFACT_PATHS[@]}; do
         if [[ -e "$name" || -z "$name" ]]; then
             echo "::debug::$name exists and has files"
             echo "::debug::Adding contents of $name"
-            echo "::debug::$(tree -a "$name" 2>&1)"
+            if [[ "$RUNNER_OS" == "Windows" ]]; then
+                echo "::debug::$(cmd //c tree "tmp" /f)"
+            else
+                echo "::debug::$(tree -a 'tmp' 2>&1)"
+            fi
     
-            COPY_DDIR="$TMPARTIFACT/$(dirname "$name")"
+            COPY_DIR="$TMPARTIFACT/$(dirname "$name")"
             mkdir -p $COPY_DIR
             cp -r "$name" "$COPY_DIR"
             echo "::debug::$name copied to $COPY_DIR"

@@ -42,7 +42,7 @@ touch "$INPUT_PATH/folder2/file3.txt"
 echo "Running main.sh"
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
-ARTIFACT_PATH=$(source "$DIR/../scripts/main.sh")
+source "$DIR/../scripts/main.sh"
 echo "artifact path: $ARTIFACT_PATH"
 #endregion
 

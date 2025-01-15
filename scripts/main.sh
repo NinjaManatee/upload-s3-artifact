@@ -303,6 +303,6 @@ echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" 
 if [[ "DRY_RUN" != "true" ]]; then
     rm -rf "$TMP_ARTIFACT"
 else
-    echo "$TMP_ARTIFACT"
+    export TMP_ARTIFACT="$TMP_ARTIFACT"
 fi
 #endregion

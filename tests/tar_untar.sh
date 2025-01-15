@@ -26,6 +26,7 @@ export DRY_RUN=true
 export RUNNER_TEMP="$TEMP"
 export RUNNER_DEBUG=true
 export GITHUB_OUTPUT=/dev/null
+export GITHUB_STEP_SUMMARY=/dev/null
 #endregion
 
 #region generate test files

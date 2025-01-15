@@ -293,7 +293,7 @@ echo "artifact-urlartifact-digest=$(echo -n $TMPARTIFACT | sha256sum)" >> $GITHU
 echo "::debug::The presigned URL is $PRESIGNED_URL"
 echo "::debug::The artifact sha256 is $ARTIFACT_HASH"
 
-NUM_BYTES=$(stat --printf="%s" "$TMPARTIFACT"
+NUM_BYTES=$(stat --printf="%s" "$TMPARTIFACT")
 FORMATTED_BYTES=$(numfmt --to=iec $NUM_BYTES)
 echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" >> $GITHUB_STEP_SUMMARY
 #endregion
@@ -303,6 +303,6 @@ echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" 
 if [[ "DRY_RUN" != "true" ]]; then
     rm -rf "$TMP_ARTIFACT"
 else
-    export TMP_ARTIFACT="$TMP_ARTIFACT"
+    export ARTIFACT_PATH="$TMP_ARTIFACT"
 fi
 #endregion

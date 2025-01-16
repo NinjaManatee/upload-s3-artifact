@@ -278,11 +278,13 @@ echo "::debug::File uploaded to AWS S3"
 #region generate outputs
 # create presigned URL to download the artifact. AWS CLI expects expiration to be in seconds
 EXPIRES_IN=$((INPUT_RETENTION_DAYS * 24 * 60 * 60))
-echo "::debug::PRESIGNED_URL=$\(aws s3 presign \"$S3URI\" --expires-in $EXPIRES_IN\)"
+echo "::debug::PRESIGNED_URL=$\(aws s3 presign \"$S3URI\" --expires-in $EXPIRES_IN --region $AWS_REGION --endpoint-url https://s3.$AWS_REGION.amazonaws.com\)"
 
 if [[ "$DRY_RUN" != "true" ]]; then
     # TODO: Presigned URL doesn't appear to be working correctly
-    PRESIGNED_URL=$(aws s3 presign "$S3URI" --expires-in $EXPIRES_IN)
+    # Adding region and endpoint URL in an attempt to get presigned URL working
+    AWS_REGION="us-east-1"
+    PRESIGNED_URL=$(aws s3 presign "$S3URI" --expires-in $EXPIRES_IN --region $AWS_REGION --endpoint-url "https://s3.$AWS_REGION.amazonaws.com")
     echo "::debug::Presigned URL created: '$PRESIGNED_URL'"
 fi
 

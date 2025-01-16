@@ -14,9 +14,9 @@
 #   - RUNNER_OS - the OS of the runner
 #   - GITHUB_REPOSITORY - the repository the artifact is associated with
 #   - GITHUB_RUN_ID - the run ID the artifact is associated with
-#   - ENV_S3_ARTIFACTS_BUCKET - the name of the AWS S3 bucket to use
-#   - ENV_AWS_ACCESS_KEY_ID - the AWS access key ID (optional if uploading to a public S3 bucket)
-#   - ENV_AWS_SECRET_ACCESS_KEY - the AWS secret access key (optional if uploading to a public S3 bucket)
+#   - S3_ARTIFACTS_BUCKET - the name of the AWS S3 bucket to use
+#   - AWS_ACCESS_KEY_ID - the AWS access key ID (optional if uploading to a public S3 bucket)
+#   - AWS_SECRET_ACCESS_KEY - the AWS secret access key (optional if uploading to a public S3 bucket)
 #   - DRY_RUN - whether to run without uploading to AWS (optional, set to true to enable dry run)
 #
 # based on open-turo/actions-s3-artifact
@@ -42,9 +42,9 @@ source "$DIR/encoding.sh"
 # RUNNER_OS="$8"
 # GITHUB_REPOSITORY="$9"
 # GITHUB_RUN_ID="${10}"
-# ENV_S3_ARTIFACTS_BUCKET="${11}"
-# ENV_AWS_ACCESS_KEY_ID="${12}"
-# ENV_AWS_SECRET_ACCESS_KEY="${13}"
+# S3_ARTIFACTS_BUCKET="${11}"
+# AWS_ACCESS_KEY_ID="${12}"
+# AWS_SECRET_ACCESS_KEY="${13}"
 
 echo "::debug::Inputs:"
 echo "::debug::    name:                      $INPUT_NAME"
@@ -57,9 +57,9 @@ echo "::debug::    include-hidden-files:      $INPUT_INCLUDE_HIDDEN_FILES"
 echo "::debug::    runner.os:                 $RUNNER_OS"
 echo "::debug::    github.repository:         $GITHUB_REPOSITORY"
 echo "::debug::    github.run-id:             $GITHUB_RUN_ID"
-echo "::debug::    S3_ARTIFACTS_BUCKET:       $ENV_S3_ARTIFACTS_BUCKET"
-echo "::debug::    AWS_ACCESS_KEY_ID:         $ENV_AWS_ACCESS_KEY_ID"
-echo "::debug::    AWS_SECRET_ACCESS_KEY:     $ENV_AWS_SECRET_ACCESS_KEY"
+echo "::debug::    S3_ARTIFACTS_BUCKET:       $S3_ARTIFACTS_BUCKET"
+echo "::debug::    AWS_ACCESS_KEY_ID:         $AWS_ACCESS_KEY_ID"
+echo "::debug::    AWS_SECRET_ACCESS_KEY:     $AWS_SECRET_ACCESS_KEY"
 #endregion
 
 #region validate input variables
@@ -118,12 +118,12 @@ fi
 
 if [[ "$DRY_RUN" != "true" ]]; then
     # check whether AWS credentials are specified and warn if they aren't
-    if [[ "$ENV_AWS_ACCESS_KEY_ID" == "" || "$ENV_AWS_SECRET_ACCESS_KEY" == "" ]]; then
+    if [[ "$AWS_ACCESS_KEY_ID" == "" || "$AWS_SECRET_ACCESS_KEY" == "" ]]; then
         echo "::warn::AWS_ACCESS_KEY_ID and/or AWS_SECRET_ACCESS_KEY is missing from environment variables."
     fi
 
     # check whether S3_ARTIFACTS_BUCKET is defined
-    if [[ "$ENV_S3_ARTIFACTS_BUCKET" == "" ]]; then
+    if [[ "$S3_ARTIFACTS_BUCKET" == "" ]]; then
         echo "::error::S3_ARTIFACTS_BUCKET is missing from environment variables."
         ERROR=true
     fi
@@ -254,7 +254,7 @@ fi
 
 #region upload artifact tarball to S3 bucket
 # Get AWS S3 bucket URI and ensure it starts with "s3://"
-S3URI="$ENV_S3_ARTIFACTS_BUCKET"
+S3URI="$S3_ARTIFACTS_BUCKET"
 if [[ "$S3URI" != s3://* ]]; then
     echo "::debug::Adding s3:// to bucket URI"
     S3URI="s3://$S3URI"

@@ -297,7 +297,7 @@ echo "::debug::The artifact sha256 is $ARTIFACT_HASH"
 
 NUM_BYTES=$(stat --printf="%s" "$TMPARTIFACT")
 FORMATTED_BYTES=$(numfmt --to=iec $NUM_BYTES)
-echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" >> $GITHUB_STEP_SUMMARY
+echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" >> $GITHUB_STEP_SUMMARY
 #endregion
 
 #region clean up temp dir

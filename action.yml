@@ -87,8 +87,13 @@ outputs:
     description: >
       SHA-256 digest for the artifact that was just uploaded. Empty if the artifact upload failed.
 
+env:
+  S3_ARTIFACTS_BUCKET: ${{ env.S3_ARTIFACTS_BUCKET }}
+  AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Upload artifact
       shell: bash

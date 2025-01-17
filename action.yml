@@ -108,7 +108,7 @@ runs:
         TMP_FILE="$(mktemp)"
         echo ${{ inputs.name }} > "$TMP_FILE"
         INPUT_PATH=$(cat "$TMP_FILE")
-        delete "$TMP_FILE"        
+        rm "$TMP_FILE"        
         export INPUT_PATH="$INPUT_PATH"
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # Need to make sure path in INPUT_PATH is a unix path

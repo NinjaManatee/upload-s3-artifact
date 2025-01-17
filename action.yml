@@ -106,7 +106,7 @@ runs:
         # around this issue, this action writes the input to a text file, then reads the text file to get the value of 
         # the passed in variable, minus the backslash at the end.
         TMP_FILE="$(mktemp)"
-        echo ${{ inputs.name }} > "$TMP_FILE"
+        echo ${{ inputs.path }} > "$TMP_FILE"
         INPUT_PATH=$(cat "$TMP_FILE")
         rm "$TMP_FILE"        
         export INPUT_PATH="$INPUT_PATH"
@@ -132,6 +132,5 @@ runs:
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
         fi
 
-        echo "INPUT_PATH: $INPUT_PATH"
         # run script
         $ACTION_PATH/scripts/main.sh

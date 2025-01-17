@@ -89,7 +89,7 @@ This action uses the following environment variables:
 
 | Name | Description | Example |
 | - | - | - |
-| `artifact-url` | Presigned URL to download an Artifact. Can be used in many scenarios such as linking to artifacts in issues or pull requests. Users must be logged-in to be able to retrieve this URL, but does not need credentials to download the object. This URL is valid as long as the artifact has not expired or the artifact, run or repository have not been deleted | `https://github.com/example-org/example-repo/actions/runs/1/artifacts/1234` |
+| `artifact-url` | Presigned URL to download an Artifact. Can be used in many scenarios such as linking to artifacts in issues or pull requests. Users must be logged-in to be able to retrieve this URL, but does not need credentials to download the object. This URL is valid as long as the artifact has not expired or the artifact, run or repository have not been deleted | `get example presigned URL` |
 | `artifact-digest` | SHA-256 digest of an Artifact | 0fde654d4c6e659b45783a725dc92f1bfb0baa6c2de64b34e814dc206ff4aaaf |
 
 ## Examples

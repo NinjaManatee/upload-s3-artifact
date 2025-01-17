@@ -1,6 +1,10 @@
 # Mirrors action/upload-artifact, taking many of the same parameters, but uploads to S3 instead of GitHub.
 name: Upload artifact(s) to AWS S3
+author: NinjaManatee
 description: Uploads artifact(s) to an AWS S3 bucket
+branding:
+  icon: upload-cloud
+  color: blue
 
 # Inputs, outputs and descriptions pulled from actions/upload-artifact
 inputs:

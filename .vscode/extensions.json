@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "arahata.linter-actionlint",
+        "streetsidesoftware.code-spell-checker",
+        "foxundermoon.shell-format",
+        "timonwong.shellcheck",
+        "wayou.vscode-todo-highlight"
+    ]
+}

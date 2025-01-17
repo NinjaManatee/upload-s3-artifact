@@ -97,6 +97,7 @@ runs:
     - name: Upload artifact
       shell: bash
       run: |
+        #!/bin/bash -x
         # read inputs into variables
         export INPUT_NAME="${{ inputs.name }}"
         export INPUT_PATH="${{ inputs.path }}"

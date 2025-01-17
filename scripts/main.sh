@@ -28,7 +28,7 @@ set -e
 #region import scripts
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
-# shellcheck source=./encoding.sh
+# shellcheck disable=SC1091
 source "$DIR/encoding.sh"
 #endregion
 

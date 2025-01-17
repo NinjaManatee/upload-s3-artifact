@@ -96,6 +96,10 @@ runs:
         # read inputs into variables
         export INPUT_NAME="${{ inputs.name }}"
         export INPUT_PATH="${{ inputs.path }}"
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          # Need to make sure path in INPUT_PATH is a unix path
+          INPUT_PATH=$(cygpath -u "$INPUT_PATH")
+        fi
         export INPUT_IF_NO_FILES_FOUND="${{ inputs.if-no-files-found }}"
         export INPUT_RETENTION_DAYS="${{ inputs.retention-days }}"
         export INPUT_COMPRESSION_LEVEL="${{ inputs.compression-level }}"

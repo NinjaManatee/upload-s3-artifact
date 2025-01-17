@@ -31,21 +31,6 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 source "$DIR/encoding.sh"
 #endregion
 
-#region read input arguments
-# INPUT_NAME="$1"
-# INPUT_PATH="$2"
-# INPUT_IF_NO_FILES_FOUND="$3"
-# INPUT_RETENTION_DAYS="$4"
-# INPUT_COMPRESSION_LEVEL="$5"
-# INPUT_OVERWRITE="$6"
-# INPUT_INCLUDE_HIDDEN_FILES="$7"
-# RUNNER_OS="$8"
-# GITHUB_REPOSITORY="$9"
-# GITHUB_RUN_ID="${10}"
-# S3_ARTIFACTS_BUCKET="${11}"
-# AWS_ACCESS_KEY_ID="${12}"
-# AWS_SECRET_ACCESS_KEY="${13}"
-
 echo "::debug::Inputs:"
 echo "::debug::    name:                      $INPUT_NAME"
 echo "::debug::    path:                      $INPUT_PATH"

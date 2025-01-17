@@ -385,7 +385,11 @@ When an Artifact is uploaded, all the files are assembled into an immutable TGZ 
 
 At the bottom of the workflow summary page, there is a dedicated section for artifacts. Here's a screenshot of something you might see:
 
-<!-- TODO: Update screenshot >
+<!-- TODO: Update screenshot -->
 <img src="https://user-images.githubusercontent.com/16109154/103645952-223c6880-4f59-11eb-8268-8dca6937b5f9.png" width="700" height="300">
 
 The size of the artifact is denoted in bytes. The displayed artifact size denotes the size of the zip that `upload-artifact` creates during upload.
+
+## The Future
+
+<!-- TODO: list TODOs -->

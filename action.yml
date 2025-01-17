@@ -92,10 +92,6 @@ runs:
   steps:
     - name: Upload artifact
       shell: bash
-      env:
-        S3_ARTIFACTS_BUCKET: ${{ env.S3_ARTIFACTS_BUCKET }}
-        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
       run: |
         # read inputs into variables
         export INPUT_NAME="${{ inputs.name }}"
@@ -110,28 +106,6 @@ runs:
         export RUNNER_OS="${{ runner.os }}"
         export GITHUB_REPOSITORY="${{ github.repository }}"
         export GITHUB_RUN_ID="${{ github.run_id }}"
-
-        # read environment variables
-        # TODO: Are these necessary since they are already environment variables?
-        export ENV_S3_ARTIFACTS_BUCKET="${{ env.S3_ARTIFACTS_BUCKET }}"
-        export ENV_AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
-        export ENV_AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
-
-        # print inputs for debugging
-        echo "::debug::Inputs:"
-        echo "::debug::    name:                      $INPUT_NAME"
-        echo "::debug::    path:                      $INPUT_PATH"
-        echo "::debug::    if-no-files-found:         $INPUT_IF_NO_FILES_FOUND"
-        echo "::debug::    retention-days:            $INPUT_RETENTION_DAYS"
-        echo "::debug::    compression-level:         $INPUT_COMPRESSION_LEVEL"
-        echo "::debug::    overwrite:                 $INPUT_OVERWRITE"
-        echo "::debug::    include-hidden-files:      $INPUT_INCLUDE_HIDDEN_FILES"
-        echo "::debug::    runner.os:                 $RUNNER_OS"
-        echo "::debug::    github.repository:         $GITHUB_REPOSITORY"
-        echo "::debug::    github.run-id:             $GITHUB_RUN_ID"
-        echo "::debug::    S3_ARTIFACTS_BUCKET:       $ENV_S3_ARTIFACTS_BUCKET"
-        echo "::debug::    AWS_ACCESS_KEY_ID:         $ENV_AWS_ACCESS_KEY_ID"
-        echo "::debug::    AWS_SECRET_ACCESS_KEY:     $ENV_AWS_SECRET_ACCESS_KEY"
 
         ACTION_PATH=$GITHUB_ACTION_PATH
         if [[ "${{ runner.os }}" == "Windows" ]]; then

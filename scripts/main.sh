@@ -14,9 +14,9 @@
 #   - RUNNER_OS - the OS of the runner
 #   - GITHUB_REPOSITORY - the repository the artifact is associated with
 #   - GITHUB_RUN_ID - the run ID the artifact is associated with
-#   - ENV_S3_ARTIFACTS_BUCKET - the name of the AWS S3 bucket to use
-#   - ENV_AWS_ACCESS_KEY_ID - the AWS access key ID (optional if uploading to a public S3 bucket)
-#   - ENV_AWS_SECRET_ACCESS_KEY - the AWS secret access key (optional if uploading to a public S3 bucket)
+#   - S3_ARTIFACTS_BUCKET - the name of the AWS S3 bucket to use
+#   - AWS_ACCESS_KEY_ID - the AWS access key ID (optional if uploading to a public S3 bucket)
+#   - AWS_SECRET_ACCESS_KEY - the AWS secret access key (optional if uploading to a public S3 bucket)
 #   - DRY_RUN - whether to run without uploading to AWS (optional, set to true to enable dry run)
 #
 # based on open-turo/actions-s3-artifact
@@ -31,21 +31,6 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 source "$DIR/encoding.sh"
 #endregion
 
-#region read input arguments
-# INPUT_NAME="$1"
-# INPUT_PATH="$2"
-# INPUT_IF_NO_FILES_FOUND="$3"
-# INPUT_RETENTION_DAYS="$4"
-# INPUT_COMPRESSION_LEVEL="$5"
-# INPUT_OVERWRITE="$6"
-# INPUT_INCLUDE_HIDDEN_FILES="$7"
-# RUNNER_OS="$8"
-# GITHUB_REPOSITORY="$9"
-# GITHUB_RUN_ID="${10}"
-# ENV_S3_ARTIFACTS_BUCKET="${11}"
-# ENV_AWS_ACCESS_KEY_ID="${12}"
-# ENV_AWS_SECRET_ACCESS_KEY="${13}"
-
 echo "::debug::Inputs:"
 echo "::debug::    name:                      $INPUT_NAME"
 echo "::debug::    path:                      $INPUT_PATH"
@@ -57,9 +42,9 @@ echo "::debug::    include-hidden-files:      $INPUT_INCLUDE_HIDDEN_FILES"
 echo "::debug::    runner.os:                 $RUNNER_OS"
 echo "::debug::    github.repository:         $GITHUB_REPOSITORY"
 echo "::debug::    github.run-id:             $GITHUB_RUN_ID"
-echo "::debug::    S3_ARTIFACTS_BUCKET:       $ENV_S3_ARTIFACTS_BUCKET"
-echo "::debug::    AWS_ACCESS_KEY_ID:         $ENV_AWS_ACCESS_KEY_ID"
-echo "::debug::    AWS_SECRET_ACCESS_KEY:     $ENV_AWS_SECRET_ACCESS_KEY"
+echo "::debug::    S3_ARTIFACTS_BUCKET:       $S3_ARTIFACTS_BUCKET"
+echo "::debug::    AWS_ACCESS_KEY_ID:         $AWS_ACCESS_KEY_ID"
+echo "::debug::    AWS_SECRET_ACCESS_KEY:     $AWS_SECRET_ACCESS_KEY"
 #endregion
 
 #region validate input variables
@@ -118,12 +103,12 @@ fi
 
 if [[ "$DRY_RUN" != "true" ]]; then
     # check whether AWS credentials are specified and warn if they aren't
-    if [[ "$ENV_AWS_ACCESS_KEY_ID" == "" || "$ENV_AWS_SECRET_ACCESS_KEY" == "" ]]; then
+    if [[ "$AWS_ACCESS_KEY_ID" == "" || "$AWS_SECRET_ACCESS_KEY" == "" ]]; then
         echo "::warn::AWS_ACCESS_KEY_ID and/or AWS_SECRET_ACCESS_KEY is missing from environment variables."
     fi
 
     # check whether S3_ARTIFACTS_BUCKET is defined
-    if [[ "$ENV_S3_ARTIFACTS_BUCKET" == "" ]]; then
+    if [[ "$S3_ARTIFACTS_BUCKET" == "" ]]; then
         echo "::error::S3_ARTIFACTS_BUCKET is missing from environment variables."
         ERROR=true
     fi
@@ -150,18 +135,18 @@ mkdir -p "$TMP_ARTIFACT"
 echo "::debug::The artifact directory is $TMP_ARTIFACT"
 
 # create a unique directory for this particular action run
-TMPDIR="$(mktemp -d -p "$TMP_ARTIFACT" "upload.XXXXXXXX")"
-mkdir -p "$TMPDIR"
-echo "::debug::Created temporary directory $TMPDIR"
+TMP_DIRECTORY="$(mktemp -d -p "$TMP_ARTIFACT" "upload.XXXXXXXX")"
+mkdir -p "$TMP_DIRECTORY"
+echo "::debug::Created temporary directory $TMP_DIRECTORY"
 
 # assign the tarball file name for future use
-TMPTAR="$TMPDIR/artifacts.tgz"
-echo "::debug::Tarball path is $TMPTAR"
+TMP_TAR="$TMP_DIRECTORY/artifacts.tgz"
+echo "::debug::Tarball path is $TMP_TAR"
 
 # create a path within our temporary directory to collect all the artifacts
-TMPARTIFACT="$TMPDIR/artifacts"
-mkdir -p "$TMPARTIFACT"
-echo "::debug::Created artifact directory $TMPARTIFACT"
+TMP_ARTIFACT="$TMP_DIRECTORY/artifacts"
+mkdir -p "$TMP_ARTIFACT"
+echo "::debug::Created artifact directory $TMP_ARTIFACT"
 #endregion
 
 #region populate artifact directory
@@ -171,7 +156,7 @@ echo "::debug::Inputs read: $ARTIFACT_PATHS"
 
 # iterate through each artifact path and copy it to the temporary path
 for name in ${ARTIFACT_PATHS[@]}; do
-    # check whether the path is an exclude and delete files in exclude from TMPARTIFACT
+    # check whether the path is an exclude and delete files in exclude from TMP_ARTIFACT
     if [[ "$name" == ^!.* ]]; then
         echo "::debug::Deleting $name"
         # remove first character
@@ -191,12 +176,12 @@ for name in ${ARTIFACT_PATHS[@]}; do
             echo "::debug::$name exists and has files"
             echo "::debug::Adding contents of $name"
             if [[ "$RUNNER_OS" == "Windows" ]]; then
-                cmd //c tree //f "$name"
+                echo "::debug::$(cmd //c tree //f "$name")"
             else
                 echo "::debug::$(tree -a 'tmp' 2>&1)"
             fi
     
-            COPY_DIR="$TMPARTIFACT/$(dirname "$name")"
+            COPY_DIR="$TMP_ARTIFACT/$(dirname "$name")"
             mkdir -p $COPY_DIR
             cp -r "$name" "$COPY_DIR"
             echo "::debug::$name copied to $COPY_DIR"
@@ -218,14 +203,11 @@ for name in ${ARTIFACT_PATHS[@]}; do
 done
 
 # list out everything in the temporary path
-if [[ -n "$RUNNER_DEBUG" ]]; then
-    echo "::debug::Contents of our temporary directory"
-    if [[ "$RUNNER_OS" = "Windows" ]]; then
-        # TODO: Can I make this debug somehow?
-        cmd //c tree //f "$TMPDIR"
-    else
-        echo "::debug::$(tree -a "$TMPDIR" 2>&1)"
-    fi
+echo "::debug::Contents of our temporary directory"
+if [[ "$RUNNER_OS" = "Windows" ]]; then
+    echo "::debug::$(cmd //c tree //f "$TMP_DIRECTORY")"
+else
+    echo "::debug::$(tree -a "$TMP_DIRECTORY" 2>&1)"
 fi
 #endregion
 
@@ -237,24 +219,19 @@ if ! [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
 fi
 
 # create tar
-echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -C '$TMPARTIFACT' ."
-GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" .
-
-# TODO: Delete this when it is no longer necessary
-# original tar command from other repo. Am I missing something important? What does --transform and
-# --show-transformed do?
-# tar -czvf "$TMPTAR" -C "$TMPARTIFACT" --transform='s/^\.\///' --show-transformed .
+echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMP_TAR' -C '$TMP_ARTIFACT' ."
+GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMP_TAR" -C "$TMP_ARTIFACT" .
 
 # List the actual contents of the archive
 if [[ -n "$RUNNER_DEBUG" ]]; then
     echo "::debug::Artifact contents"
-    echo "$(tar -ztvf "$TMPTAR" 2>&1)"
+    echo "::debug::$(tar -ztvf "$TMP_TAR" 2>&1)"
 fi
 #endregion
 
 #region upload artifact tarball to S3 bucket
 # Get AWS S3 bucket URI and ensure it starts with "s3://"
-S3URI="$ENV_S3_ARTIFACTS_BUCKET"
+S3URI="$S3_ARTIFACTS_BUCKET"
 if [[ "$S3URI" != s3://* ]]; then
     echo "::debug::Adding s3:// to bucket URI"
     S3URI="s3://$S3URI"
@@ -267,10 +244,10 @@ ENCODED_FILENAME="$(urlencode $INPUT_NAME).tgz"
 KEY="$REPO/$RUN_ID/$ENCODED_FILENAME"
 S3URI="${S3URI%/}/$KEY"
 
-echo "::debug::Uploading \"$TMPTAR\" to S3 \"$S3URI\""
-echo "::debug::aws s3 cp \"$TMPTAR\" \"$S3URI\""
+echo "::debug::Uploading \"$TMP_TAR\" to S3 \"$S3URI\""
+echo "::debug::aws s3 cp \"$TMP_TAR\" \"$S3URI\""
 if [[ "$DRY_RUN" != "true" ]]; then
-    aws s3 cp "$TMPTAR" "$S3URI"
+    aws s3 cp "$TMP_TAR" "$S3URI"
 fi
 echo "::debug::File uploaded to AWS S3"
 #endregion
@@ -290,14 +267,14 @@ fi
 
 # create outputs and summary
 echo "artifact-url=$PRESIGNED_URL" >> $GITHUB_OUTPUT
-ARTIFACT_HASH=$(echo -n $TMPARTIFACT | sha256sum)
-echo "artifact-urlartifact-digest=$(echo -n $TMPARTIFACT | sha256sum)" >> $GITHUB_OUTPUT
+ARTIFACT_HASH=$(echo -n $TMP_ARTIFACT | sha256sum)
+echo "artifact-digest=$(echo -n $TMP_ARTIFACT | sha256sum)" >> $GITHUB_OUTPUT
 echo "::debug::The presigned URL is $PRESIGNED_URL"
 echo "::debug::The artifact sha256 is $ARTIFACT_HASH"
 
-NUM_BYTES=$(stat --printf="%s" "$TMPARTIFACT")
+NUM_BYTES=$(stat --printf="%s" "$TMP_ARTIFACT")
 FORMATTED_BYTES=$(numfmt --to=iec $NUM_BYTES)
-echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" >> $GITHUB_STEP_SUMMARY
+echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" >> $GITHUB_STEP_SUMMARY
 #endregion
 
 #region clean up temp dir
@@ -305,6 +282,6 @@ echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;'$FORMATTED_BYTES'B" 
 if [[ "$DRY_RUN" != "true" ]]; then
     rm -rf "$TMP_ARTIFACT"
 else
-    printf "ARTIFACT_PATH=$TMPTAR" > tmp.txt
+    printf "ARTIFACT_PATH=$TMP_TAR" > tmp.txt
 fi
 #endregion

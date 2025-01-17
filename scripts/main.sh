@@ -135,18 +135,18 @@ mkdir -p "$TMP_ARTIFACT"
 echo "::debug::The artifact directory is $TMP_ARTIFACT"
 
 # create a unique directory for this particular action run
-TMPDIR="$(mktemp -d -p "$TMP_ARTIFACT" "upload.XXXXXXXX")"
-mkdir -p "$TMPDIR"
-echo "::debug::Created temporary directory $TMPDIR"
+TMP_DIRECTORY="$(mktemp -d -p "$TMP_ARTIFACT" "upload.XXXXXXXX")"
+mkdir -p "$TMP_DIRECTORY"
+echo "::debug::Created temporary directory $TMP_DIRECTORY"
 
 # assign the tarball file name for future use
-TMPTAR="$TMPDIR/artifacts.tgz"
-echo "::debug::Tarball path is $TMPTAR"
+TMP_TAR="$TMP_DIRECTORY/artifacts.tgz"
+echo "::debug::Tarball path is $TMP_TAR"
 
 # create a path within our temporary directory to collect all the artifacts
-TMPARTIFACT="$TMPDIR/artifacts"
-mkdir -p "$TMPARTIFACT"
-echo "::debug::Created artifact directory $TMPARTIFACT"
+TMP_ARTIFACT="$TMP_DIRECTORY/artifacts"
+mkdir -p "$TMP_ARTIFACT"
+echo "::debug::Created artifact directory $TMP_ARTIFACT"
 #endregion
 
 #region populate artifact directory
@@ -156,7 +156,7 @@ echo "::debug::Inputs read: $ARTIFACT_PATHS"
 
 # iterate through each artifact path and copy it to the temporary path
 for name in ${ARTIFACT_PATHS[@]}; do
-    # check whether the path is an exclude and delete files in exclude from TMPARTIFACT
+    # check whether the path is an exclude and delete files in exclude from TMP_ARTIFACT
     if [[ "$name" == ^!.* ]]; then
         echo "::debug::Deleting $name"
         # remove first character
@@ -181,7 +181,7 @@ for name in ${ARTIFACT_PATHS[@]}; do
                 echo "::debug::$(tree -a 'tmp' 2>&1)"
             fi
     
-            COPY_DIR="$TMPARTIFACT/$(dirname "$name")"
+            COPY_DIR="$TMP_ARTIFACT/$(dirname "$name")"
             mkdir -p $COPY_DIR
             cp -r "$name" "$COPY_DIR"
             echo "::debug::$name copied to $COPY_DIR"
@@ -205,9 +205,9 @@ done
 # list out everything in the temporary path
 echo "::debug::Contents of our temporary directory"
 if [[ "$RUNNER_OS" = "Windows" ]]; then
-    echo "::debug::$(cmd //c tree //f "$TMPDIR")"
+    echo "::debug::$(cmd //c tree //f "$TMP_DIRECTORY")"
 else
-    echo "::debug::$(tree -a "$TMPDIR" 2>&1)"
+    echo "::debug::$(tree -a "$TMP_DIRECTORY" 2>&1)"
 fi
 #endregion
 
@@ -219,13 +219,13 @@ if ! [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
 fi
 
 # create tar
-echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -C '$TMPARTIFACT' ."
-GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" .
+echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMP_TAR' -C '$TMP_ARTIFACT' ."
+GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMP_TAR" -C "$TMP_ARTIFACT" .
 
 # List the actual contents of the archive
 if [[ -n "$RUNNER_DEBUG" ]]; then
     echo "::debug::Artifact contents"
-    echo "::debug::$(tar -ztvf "$TMPTAR" 2>&1)"
+    echo "::debug::$(tar -ztvf "$TMP_TAR" 2>&1)"
 fi
 #endregion
 
@@ -244,10 +244,10 @@ ENCODED_FILENAME="$(urlencode $INPUT_NAME).tgz"
 KEY="$REPO/$RUN_ID/$ENCODED_FILENAME"
 S3URI="${S3URI%/}/$KEY"
 
-echo "::debug::Uploading \"$TMPTAR\" to S3 \"$S3URI\""
-echo "::debug::aws s3 cp \"$TMPTAR\" \"$S3URI\""
+echo "::debug::Uploading \"$TMP_TAR\" to S3 \"$S3URI\""
+echo "::debug::aws s3 cp \"$TMP_TAR\" \"$S3URI\""
 if [[ "$DRY_RUN" != "true" ]]; then
-    aws s3 cp "$TMPTAR" "$S3URI"
+    aws s3 cp "$TMP_TAR" "$S3URI"
 fi
 echo "::debug::File uploaded to AWS S3"
 #endregion
@@ -267,12 +267,12 @@ fi
 
 # create outputs and summary
 echo "artifact-url=$PRESIGNED_URL" >> $GITHUB_OUTPUT
-ARTIFACT_HASH=$(echo -n $TMPARTIFACT | sha256sum)
-echo "artifact-urlartifact-digest=$(echo -n $TMPARTIFACT | sha256sum)" >> $GITHUB_OUTPUT
+ARTIFACT_HASH=$(echo -n $TMP_ARTIFACT | sha256sum)
+echo "artifact-digest=$(echo -n $TMP_ARTIFACT | sha256sum)" >> $GITHUB_OUTPUT
 echo "::debug::The presigned URL is $PRESIGNED_URL"
 echo "::debug::The artifact sha256 is $ARTIFACT_HASH"
 
-NUM_BYTES=$(stat --printf="%s" "$TMPARTIFACT")
+NUM_BYTES=$(stat --printf="%s" "$TMP_ARTIFACT")
 FORMATTED_BYTES=$(numfmt --to=iec $NUM_BYTES)
 echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" >> $GITHUB_STEP_SUMMARY
 #endregion
@@ -282,6 +282,6 @@ echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" 
 if [[ "$DRY_RUN" != "true" ]]; then
     rm -rf "$TMP_ARTIFACT"
 else
-    printf "ARTIFACT_PATH=$TMPTAR" > tmp.txt
+    printf "ARTIFACT_PATH=$TMP_TAR" > tmp.txt
 fi
 #endregion

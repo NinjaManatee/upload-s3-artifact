@@ -151,8 +151,9 @@ echo "::debug::Created artifact directory $TMP_ARTIFACT"
 #endregion
 
 #region populate artifact directory
-echo "::debug::Reading the path string into an array"
-read -ar ARTIFACT_PATHS <<< "$INPUT_PATH"
+echo "::debug::Reading the path string ($INPUT_PATH) into an array"
+# shellcheck disable=SC2162
+read -a ARTIFACT_PATHS <<< "$INPUT_PATH"
 
 # iterate through each artifact path and copy it to the temporary path
 for name in "${ARTIFACT_PATHS[@]}"; do

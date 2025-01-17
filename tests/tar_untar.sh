@@ -45,7 +45,9 @@ touch "$INPUT_PATH/folder2/file3.txt"
 echo "Running main.sh"
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+# shellcheck disable=SC1091
 source "$DIR/../scripts/main.sh"
+# shellcheck disable=SC1091
 source "./tmp.txt"
 echo "artifact path: $ARTIFACT_PATH"
 #endregion
@@ -92,7 +94,9 @@ touch "$INPUT_PATH"
 
 #region run main script
 echo "Running main.sh"
+# shellcheck disable=SC1091
 source "$DIR/../scripts/main.sh"
+# shellcheck disable=SC1091
 source "./tmp.txt"
 echo "artifact path: $ARTIFACT_PATH"
 #endregion

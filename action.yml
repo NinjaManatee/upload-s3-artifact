@@ -114,4 +114,4 @@ runs:
         fi
 
         # run script
-        $ACTION_PATH/scripts/main.sh
+        # $ACTION_PATH/scripts/main.sh

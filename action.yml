@@ -97,31 +97,41 @@ runs:
     - name: Upload artifact
       shell: bash
       run: |
-        #!/bin/bash -x
         # read inputs into variables
         export INPUT_NAME="${{ inputs.name }}"
-        export INPUT_PATH="${{ inputs.path }}"
-        #if [[ "${{ runner.os }}" == "Windows" ]]; then
+        
+        # Because of some weirdness with bash GitHub action steps work, if you pass in a string that ends with a 
+        # backslash character (e.g. a windows style path that ends with a backslash) and you put quotes around the 
+        # input, then you get the error `unexpected EOF while looking for matching "'"`, and the script crashes. To work
+        # around this issue, this action writes the input to a text file, then reads the text file to get the value of 
+        # the passed in variable, minus the backslash at the end.
+        TMP_FILE="$(mktemp)"
+        echo ${{ inputs.name }} > "$TMP_FILE"
+        INPUT_PATH=$(cat "$TMP_FILE")
+        delete "$TMP_FILE"        
+        export INPUT_PATH="$INPUT_PATH"
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
           # Need to make sure path in INPUT_PATH is a unix path
-          #INPUT_PATH="$(cygpath -u "$INPUT_PATH")"
-        #fi
-        # export INPUT_IF_NO_FILES_FOUND="${{ inputs.if-no-files-found }}"
-        # export INPUT_RETENTION_DAYS="${{ inputs.retention-days }}"
-        # export INPUT_COMPRESSION_LEVEL="${{ inputs.compression-level }}"
-        # export INPUT_OVERWRITE="${{ inputs.overwrite }}"
-        # export INPUT_INCLUDE_HIDDEN_FILES="${{ inputs.include-hidden-files }}"
+          INPUT_PATH="$(cygpath -u "$INPUT_PATH")"
+        fi
+        
+        export INPUT_IF_NO_FILES_FOUND="${{ inputs.if-no-files-found }}"
+        export INPUT_RETENTION_DAYS="${{ inputs.retention-days }}"
+        export INPUT_COMPRESSION_LEVEL="${{ inputs.compression-level }}"
+        export INPUT_OVERWRITE="${{ inputs.overwrite }}"
+        export INPUT_INCLUDE_HIDDEN_FILES="${{ inputs.include-hidden-files }}"
 
-        # # read github actions variables
-        # export RUNNER_OS="${{ runner.os }}"
-        # export GITHUB_REPOSITORY="${{ github.repository }}"
-        # export GITHUB_RUN_ID="${{ github.run_id }}"
+        # read github actions variables
+        export RUNNER_OS="${{ runner.os }}"
+        export GITHUB_REPOSITORY="${{ github.repository }}"
+        export GITHUB_RUN_ID="${{ github.run_id }}"
 
-        # ACTION_PATH=$GITHUB_ACTION_PATH
-        # if [[ "${{ runner.os }}" == "Windows" ]]; then
-        #   # Need to make sure path in ACTION_PATH is a unix path
-        #   ACTION_PATH=$(cygpath -u "$ACTION_PATH")
-        # fi
+        ACTION_PATH=$GITHUB_ACTION_PATH
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          # Need to make sure path in ACTION_PATH is a unix path
+          ACTION_PATH=$(cygpath -u "$ACTION_PATH")
+        fi
 
-        # echo "INPUT_PATH: $INPUT_PATH"
-        # # run script
-        # $ACTION_PATH/scripts/main.sh
+        echo "INPUT_PATH: $INPUT_PATH"
+        # run script
+        $ACTION_PATH/scripts/main.sh

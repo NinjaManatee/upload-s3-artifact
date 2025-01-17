@@ -99,22 +99,11 @@ runs:
       run: |
         # read inputs into variables
         export INPUT_NAME="${{ inputs.name }}"
-        
-        # Because of some weirdness with bash GitHub action steps work, if you pass in a string that ends with a 
-        # backslash character (e.g. a windows style path that ends with a backslash) and you put quotes around the 
-        # input, then you get the error `unexpected EOF while looking for matching "'"`, and the script crashes. To work
-        # around this issue, this action writes the input to a text file, then reads the text file to get the value of 
-        # the passed in variable, minus the backslash at the end.
-        TMP_FILE="$(mktemp)"
-        echo ${{ inputs.path }} > "$TMP_FILE"
-        INPUT_PATH=$(cat "$TMP_FILE")
-        rm "$TMP_FILE"        
-        export INPUT_PATH="$INPUT_PATH"
+        export INPUT_PATH='${{ inputs.path }}'
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # Need to make sure path in INPUT_PATH is a unix path
           export INPUT_PATH="$(cygpath -u "$INPUT_PATH")"
         fi
-
         export INPUT_IF_NO_FILES_FOUND="${{ inputs.if-no-files-found }}"
         export INPUT_RETENTION_DAYS="${{ inputs.retention-days }}"
         export INPUT_COMPRESSION_LEVEL="${{ inputs.compression-level }}"

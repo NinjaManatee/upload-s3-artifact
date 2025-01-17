@@ -176,7 +176,7 @@ for name in ${ARTIFACT_PATHS[@]}; do
             echo "::debug::$name exists and has files"
             echo "::debug::Adding contents of $name"
             if [[ "$RUNNER_OS" == "Windows" ]]; then
-                cmd //c tree //f "$name"
+                echo "::debug::$(cmd //c tree //f "$name")"
             else
                 echo "::debug::$(tree -a 'tmp' 2>&1)"
             fi
@@ -203,14 +203,11 @@ for name in ${ARTIFACT_PATHS[@]}; do
 done
 
 # list out everything in the temporary path
-if [[ -n "$RUNNER_DEBUG" ]]; then
-    echo "::debug::Contents of our temporary directory"
-    if [[ "$RUNNER_OS" = "Windows" ]]; then
-        # TODO: Can I make this debug somehow?
-        cmd //c tree //f "$TMPDIR"
-    else
-        echo "::debug::$(tree -a "$TMPDIR" 2>&1)"
-    fi
+echo "::debug::Contents of our temporary directory"
+if [[ "$RUNNER_OS" = "Windows" ]]; then
+    echo "::debug::$(cmd //c tree //f "$TMPDIR")"
+else
+    echo "::debug::$(tree -a "$TMPDIR" 2>&1)"
 fi
 #endregion
 
@@ -225,15 +222,10 @@ fi
 echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMPTAR' -C '$TMPARTIFACT' ."
 GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMPTAR" -C "$TMPARTIFACT" .
 
-# TODO: Delete this when it is no longer necessary
-# original tar command from other repo. Am I missing something important? What does --transform and
-# --show-transformed do?
-# tar -czvf "$TMPTAR" -C "$TMPARTIFACT" --transform='s/^\.\///' --show-transformed .
-
 # List the actual contents of the archive
 if [[ -n "$RUNNER_DEBUG" ]]; then
     echo "::debug::Artifact contents"
-    echo "$(tar -ztvf "$TMPTAR" 2>&1)"
+    echo "::debug::$(tar -ztvf "$TMPTAR" 2>&1)"
 fi
 #endregion
 

@@ -28,6 +28,7 @@ set -e
 #region import scripts
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+# shellcheck source=./encoding.sh
 source "$DIR/encoding.sh"
 #endregion
 
@@ -151,11 +152,10 @@ echo "::debug::Created artifact directory $TMP_ARTIFACT"
 
 #region populate artifact directory
 echo "::debug::Reading the path string into an array"
-read -a ARTIFACT_PATHS <<< "$INPUT_PATH"
-echo "::debug::Inputs read: $ARTIFACT_PATHS"
+read -ar ARTIFACT_PATHS <<< "$INPUT_PATH"
 
 # iterate through each artifact path and copy it to the temporary path
-for name in ${ARTIFACT_PATHS[@]}; do
+for name in "${ARTIFACT_PATHS[@]}"; do
     # check whether the path is an exclude and delete files in exclude from TMP_ARTIFACT
     if [[ "$name" == ^!.* ]]; then
         echo "::debug::Deleting $name"
@@ -165,8 +165,7 @@ for name in ${ARTIFACT_PATHS[@]}; do
         # delete file
         # TODO: Is this working correctly? Do I want to be using "." here?
         relativePath=$(realpath --relative-to="." "$name")
-        upperDir=".."
-        if [[ "${relativePath#upperDir}" != "${relativePath}" ]]; then
+        if [[ "${relativePath#".."}" != "${relativePath}" ]]; then
             echo "::error::Path $name isn't a subdirectory of the current directory! Not deleting."
         else
             rm -rf "$name"
@@ -182,7 +181,7 @@ for name in ${ARTIFACT_PATHS[@]}; do
             fi
     
             COPY_DIR="$TMP_ARTIFACT/$(dirname "$name")"
-            mkdir -p $COPY_DIR
+            mkdir -p "$COPY_DIR"
             cp -r "$name" "$COPY_DIR"
             echo "::debug::$name copied to $COPY_DIR"
         else
@@ -215,12 +214,12 @@ fi
 # exclude hidden files, if necessary
 if ! [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
     echo "::debug::Excluding hidden files"
-    exclude=-"-exclude='.*'"
+    exclude="--exclude=\".*\""
 fi
 
 # create tar
 echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMP_TAR' -C '$TMP_ARTIFACT' ."
-GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf "$TMP_TAR" -C "$TMP_ARTIFACT" .
+GZIP=-$INPUT_COMPRESSION_LEVEL tar "$exclude" -zcvf "$TMP_TAR" -C "$TMP_ARTIFACT" .
 
 # List the actual contents of the archive
 if [[ -n "$RUNNER_DEBUG" ]]; then
@@ -240,7 +239,7 @@ fi
 # Build key to object in S3 bucket
 REPO="$GITHUB_REPOSITORY"
 RUN_ID="$GITHUB_RUN_ID"
-ENCODED_FILENAME="$(urlencode $INPUT_NAME).tgz"
+ENCODED_FILENAME="$(urlencode "$INPUT_NAME").tgz"
 KEY="$REPO/$RUN_ID/$ENCODED_FILENAME"
 S3URI="${S3URI%/}/$KEY"
 
@@ -266,15 +265,15 @@ if [[ "$DRY_RUN" != "true" ]]; then
 fi
 
 # create outputs and summary
-echo "artifact-url=$PRESIGNED_URL" >> $GITHUB_OUTPUT
-ARTIFACT_HASH=$(echo -n $TMP_ARTIFACT | sha256sum)
-echo "artifact-digest=$(echo -n $TMP_ARTIFACT | sha256sum)" >> $GITHUB_OUTPUT
+echo "artifact-url=$PRESIGNED_URL" >> "$GITHUB_OUTPUT"
+ARTIFACT_HASH=$(echo -n "$TMP_ARTIFACT" | sha256sum)
+echo "artifact-digest=$(echo -n "$TMP_ARTIFACT" | sha256sum)" >> "$GITHUB_OUTPUT"
 echo "::debug::The presigned URL is $PRESIGNED_URL"
 echo "::debug::The artifact sha256 is $ARTIFACT_HASH"
 
 NUM_BYTES=$(stat --printf="%s" "$TMP_ARTIFACT")
-FORMATTED_BYTES=$(numfmt --to=iec $NUM_BYTES)
-echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" >> $GITHUB_STEP_SUMMARY
+FORMATTED_BYTES=$(numfmt --to=iec "$NUM_BYTES")
+echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" >> "$GITHUB_STEP_SUMMARY"
 #endregion
 
 #region clean up temp dir
@@ -282,6 +281,6 @@ echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" 
 if [[ "$DRY_RUN" != "true" ]]; then
     rm -rf "$TMP_ARTIFACT"
 else
-    printf "ARTIFACT_PATH=$TMP_TAR" > tmp.txt
+    echo "ARTIFACT_PATH=$TMP_TAR" > tmp.txt
 fi
 #endregion

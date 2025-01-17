@@ -5,6 +5,7 @@
         "numfmt",
         "presign",
         "turo",
+        "urldecode",
         "urlencode",
         "zcvf",
         "ztvf"

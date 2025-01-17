@@ -1,3 +1,4 @@
+#!/bin/bash
 # Script with functions for URL encoding/decoding a string
 # see: https://gist.github.com/cdown/1163649#file-gistfile1-sh
 

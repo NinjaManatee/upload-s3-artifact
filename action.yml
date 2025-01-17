@@ -117,5 +117,6 @@ runs:
           ACTION_PATH=$(cygpath -u "$ACTION_PATH")
         fi
 
+        echo "INPUT_PATH: $INPUT_PATH"
         # run script
         $ACTION_PATH/scripts/main.sh

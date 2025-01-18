@@ -49,7 +49,7 @@ echo "Running main.sh"
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 # shellcheck disable=SC1091
-source "$DIR/../scripts/main.sh" > output.txt
+source "$DIR/../scripts/main.sh"
 # shellcheck disable=SC1091
 source "./tmp.txt"
 echo "artifact path: $ARTIFACT_PATH"
@@ -57,18 +57,14 @@ echo "artifact path: $ARTIFACT_PATH"
 
 #region untar archive to a different directory
 echo "Testing untar"
-OUTPUT_PATH="./newTemp"
+OUTPUT_PATH="./newTemp1"
 mkdir -p "$OUTPUT_PATH"
 tar -xzvf "$ARTIFACT_PATH" -C "$OUTPUT_PATH"
 #endregion
 
 #region verify that the untar happened correctly
 echo "Comparing folders"
-diff -r $INPUT_PATH "$OUTPUT_PATH" > testResult.txt 
-#endregion
-
-#region cleanup run
-rm -rf ./newTemp tmp.txt
+diff -r $INPUT_PATH "$OUTPUT_PATH"
 #endregion
 #endregion
 
@@ -86,7 +82,7 @@ touch "$INPUT_PATH"
 #region run main script
 echo "Running main.sh"
 # shellcheck disable=SC1091
-source "$DIR/../scripts/main.sh" >> output.txt
+source "$DIR/../scripts/main.sh"
 # shellcheck disable=SC1091
 source "./tmp.txt"
 echo "artifact path: $ARTIFACT_PATH"
@@ -94,18 +90,14 @@ echo "artifact path: $ARTIFACT_PATH"
 
 #region untar archive to a different directory
 echo "Testing untar"
-OUTPUT_PATH="./newTemp"
+OUTPUT_PATH="./newTemp2"
 mkdir -p "$OUTPUT_PATH"
 tar -xzvf "$ARTIFACT_PATH" -C "$OUTPUT_PATH"
 #endregion
 
 #region verify that the untar happened correctly
 echo "Comparing folders"
-diff -r $INPUT_PATH "$OUTPUT_PATH" >> testResult.txt
-#endregion
-
-#region cleanup run
-rm -rf ./newTemp "$INPUT_PATH.txt"
+diff -r "$INPUT_PATH" "$OUTPUT_PATH"
 #endregion
 #endregion
 
@@ -119,7 +111,7 @@ export INPUT_PATH="tmp/folder1"
 #region run main script
 echo "Running main.sh"
 # shellcheck disable=SC1091
-source "$DIR/../scripts/main.sh" >> output.txt
+source "$DIR/../scripts/main.sh"
 # shellcheck disable=SC1091
 source "./tmp.txt"
 echo "artifact path: $ARTIFACT_PATH"
@@ -127,17 +119,13 @@ echo "artifact path: $ARTIFACT_PATH"
 
 #region untar archive to a different directory
 echo "Testing untar"
-OUTPUT_PATH="./newTemp"
+OUTPUT_PATH="./newTemp3"
 mkdir -p "$OUTPUT_PATH"
 tar -xzvf "$ARTIFACT_PATH" -C "$OUTPUT_PATH"
 #endregion
 
 #region verify that the untar happened correctly
 echo "Comparing folders"
-diff -r $INPUT_PATH "$OUTPUT_PATH" >> testResult.txt
-#endregion
-
-#region cleanup run
-rm -rf ./newTemp "$INPUT_PATH.txt"
+diff -r $INPUT_PATH "$OUTPUT_PATH"
 #endregion
 #endregion

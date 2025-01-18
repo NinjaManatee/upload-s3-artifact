@@ -254,26 +254,25 @@ echo "::debug::File uploaded to AWS S3"
 #region generate outputs
 # create presigned URL to download the artifact. AWS CLI expects expiration to be in seconds
 EXPIRES_IN=$((INPUT_RETENTION_DAYS * 24 * 60 * 60))
-echo "::debug::PRESIGNED_URL=$\(aws s3 presign \"$S3URI\" --expires-in $EXPIRES_IN --region $AWS_REGION --endpoint-url https://s3.$AWS_REGION.amazonaws.com\)"
-
+echo "::debug::aws s3 presign \"$S3URI\" --expires-in $EXPIRES_IN"
 if [[ "$DRY_RUN" != "true" ]]; then
     # TODO: Presigned URL doesn't appear to be working correctly
-    # Adding region and endpoint URL in an attempt to get presigned URL working
-    AWS_REGION="us-east-1"
-    PRESIGNED_URL=$(aws s3 presign "$S3URI" --expires-in $EXPIRES_IN --region $AWS_REGION --endpoint-url "https://s3.$AWS_REGION.amazonaws.com")
+    PRESIGNED_URL=$(aws s3 presign "$S3URI" --expires-in $EXPIRES_IN)
     echo "::debug::Presigned URL created: '$PRESIGNED_URL'"
 fi
 
+# get the SHA256 checksum of the uploaded tarball
+ARTIFACT_HASH=$(echo -n "$TMP_TAR" | sha256sum)
+
 # create outputs and summary
 echo "artifact-url=$PRESIGNED_URL" >> "$GITHUB_OUTPUT"
-ARTIFACT_HASH=$(echo -n "$TMP_ARTIFACT" | sha256sum)
-echo "artifact-digest=$(echo -n "$TMP_ARTIFACT" | sha256sum)" >> "$GITHUB_OUTPUT"
+echo "artifact-digest=$ARTIFACT_HASH" >> "$GITHUB_OUTPUT"
 echo "::debug::The presigned URL is $PRESIGNED_URL"
 echo "::debug::The artifact sha256 is $ARTIFACT_HASH"
 
 NUM_BYTES=$(stat --printf="%s" "$TMP_ARTIFACT")
 FORMATTED_BYTES=$(numfmt --to=iec "$NUM_BYTES")
-echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" >> "$GITHUB_STEP_SUMMARY"
+echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;$S3URI&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" >> "$GITHUB_STEP_SUMMARY"
 #endregion
 
 #region clean up temp dir

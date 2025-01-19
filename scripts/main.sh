@@ -154,6 +154,15 @@ echo "::debug::Created artifact directory $TMP_ARTIFACT"
 echo "::debug::Reading the path string ($INPUT_PATH) into an array"
 read -r ARTIFACT_PATHS <<< "$INPUT_PATH"
 
+# exclude hidden files, if necessary
+if [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
+    echo "::debug::including hidden files"
+    shopt -s globstar dotglob
+else
+    echo "::debug::excluding hidden files"
+    shopt -s globstar
+fi
+
 # iterate through each artifact path and copy it to the temporary path
 for name in "${ARTIFACT_PATHS[@]}"; do
     # check whether the path is an exclude and delete files in exclude from TMP_ARTIFACT
@@ -211,15 +220,9 @@ fi
 #endregion
 
 #region tarball the temporary path into a single object
-# exclude hidden files, if necessary
-if ! [[ "$INPUT_INCLUDE_HIDDEN_FILES" ]]; then
-    echo "::debug::Excluding hidden files"
-    exclude="--exclude=\".*\""
-fi
-
 # create tar
 echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMP_TAR' -C '$TMP_ARTIFACT' ."
-GZIP=-$INPUT_COMPRESSION_LEVEL tar "$exclude" -zcvf "$TMP_TAR" -C "$TMP_ARTIFACT" .
+GZIP=-$INPUT_COMPRESSION_LEVEL tar -zcvf "$TMP_TAR" -C "$TMP_ARTIFACT" .
 
 # List the actual contents of the archive
 if [[ -n "$RUNNER_DEBUG" ]]; then

@@ -270,7 +270,8 @@ echo "::debug::File uploaded to AWS S3"
 EXPIRES_IN=$((INPUT_RETENTION_DAYS * 24 * 60 * 60))
 echo "::debug::aws s3 presign \"$S3URI\" --expires-in $EXPIRES_IN"
 if [[ "$DRY_RUN" != "true" ]]; then
-    # TODO: Presigned URL doesn't appear to be working correctly
+    # Presigned URL doesn't work correctly if ENV_AWS_ACCESS_KEY_ID is a secret in GitHub. If it in the generated URL, 
+    # so if it is a secret, GitHub replaces it with '***', which causes the URL to fail
     PRESIGNED_URL=$(aws s3 presign "$S3URI" --expires-in $EXPIRES_IN)
     echo "::debug::Presigned URL created: '$PRESIGNED_URL'"
 fi

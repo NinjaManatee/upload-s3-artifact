@@ -188,11 +188,9 @@ for name in "${ARTIFACT_PATHS[@]}"; do
             else
                 echo "::debug::$(tree -a 'tmp' 2>&1)"
             fi
-    
-            COPY_DIR="$TMP_ARTIFACT/$(dirname "$name")"
-            mkdir -p "$COPY_DIR"
-            cp -r "$name" "$COPY_DIR"
-            echo "::debug::$name copied to $COPY_DIR"
+
+            cp -rT "$name" "$TMP_ARTIFACT"
+            echo "::debug::$name copied to $TMP_ARTIFACT"
         else
             case "$INPUT_IF_NO_FILES_FOUND" in
             "warn")

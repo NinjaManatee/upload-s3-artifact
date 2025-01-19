@@ -192,13 +192,13 @@ for name in "${ARTIFACT_PATHS[@]}"; do
                 FILENAME=$(basename "$name")
                 # append file name to TMP_ARTIFACT
                 NEW_FILE_PATH="$TMP_ARTIFACT/$FILENAME"
-                echo "::debug::cp -aT \"$name\" \"$NEW_FILE_PATH\""
-                cp -aT "$name" "$NEW_FILE_PATH"
+                echo "::debug::cp \"$name\" \"$NEW_FILE_PATH\""
+                cp "$name" "$NEW_FILE_PATH"
                 echo "::debug::$name copied to $NEW_FILE_PATH"
             else
                 # folder to copy
                 echo "::debug::cp -aT \"$name\" \"$TMP_ARTIFACT\""
-                cp -a "$name" "$TMP_ARTIFACT"
+                cp -aT "$name" "$TMP_ARTIFACT"
                 echo "::debug::$name copied to $TMP_ARTIFACT"
             fi
         else

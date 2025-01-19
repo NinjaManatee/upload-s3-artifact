@@ -64,7 +64,7 @@ tar -xzvf "$ARTIFACT_PATH" -C "$OUTPUT_PATH"
 
 #region verify that the untar happened correctly
 echo "Comparing folders"
-diff -r $INPUT_PATH "$OUTPUT_PATH"
+diff -r "$INPUT_PATH" "$OUTPUT_PATH"
 #endregion
 #endregion
 
@@ -126,6 +126,6 @@ tar -xzvf "$ARTIFACT_PATH" -C "$OUTPUT_PATH"
 
 #region verify that the untar happened correctly
 echo "Comparing folders"
-diff -r $INPUT_PATH "$OUTPUT_PATH"
+diff -r "$INPUT_PATH" "$OUTPUT_PATH"
 #endregion
 #endregion

@@ -5,6 +5,10 @@
 #
 # Usage: tar_untar.sh
 
+#region cleanup previous runs if necessary
+rm -rf ./newTemp1/ ./newTemp2/ ./newTemp3/ ./tmp/ testFile.txt tmp.txt
+#endregion
+
 #region initialize common environment variables
 export INPUT_IF_NO_FILES_FOUND="warn"
 export INPUT_RETENTION_DAYS="7"

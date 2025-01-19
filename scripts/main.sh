@@ -183,14 +183,24 @@ for name in "${ARTIFACT_PATHS[@]}"; do
         if [[ -e "$name" || -z "$name" ]]; then
             echo "::debug::$name exists and has files"
             echo "::debug::Adding contents of $name"
-            if [[ "$RUNNER_OS" == "Windows" ]]; then
-                echo "::debug::$(cmd //c tree //f "$name")"
-            else
-                echo "::debug::$(tree -a 'tmp' 2>&1)"
-            fi
+            echo "::debug::$(ls "$name" 2>&1)"
 
-            cp -rT "$name" "$TMP_ARTIFACT"
-            echo "::debug::$name copied to $TMP_ARTIFACT"
+            # check whether it is a file or a folder to copy
+            if [[ -f "$name" ]]; then
+                # file to copy
+                # get file name
+                FILENAME=$(basename "$name")
+                # append file name to TMP_ARTIFACT
+                NEW_FILE_PATH="$TMP_ARTIFACT/$FILENAME"
+                echo "::debug::cp -aT \"$name\" \"$NEW_FILE_PATH\""
+                cp -aT "$name" "$NEW_FILE_PATH"
+                echo "::debug::$name copied to $NEW_FILE_PATH"
+            else
+                # folder to copy
+                echo "::debug::cp -aT \"$name\" \"$TMP_ARTIFACT\""
+                cp -a "$name" "$TMP_ARTIFACT"
+                echo "::debug::$name copied to $TMP_ARTIFACT"
+            fi
         else
             case "$INPUT_IF_NO_FILES_FOUND" in
             "warn")
@@ -208,6 +218,9 @@ for name in "${ARTIFACT_PATHS[@]}"; do
     fi
 done
 
+# unset globbing
+shopt -u globstar dotglob
+
 # list out everything in the temporary path
 echo "::debug::Contents of our temporary directory"
 if [[ "$RUNNER_OS" = "Windows" ]]; then
@@ -219,7 +232,7 @@ fi
 
 #region tarball the temporary path into a single object
 # create tar
-echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar $exclude -zcvf '$TMP_TAR' -C '$TMP_ARTIFACT' ."
+echo "::debug::GZIP=-$INPUT_COMPRESSION_LEVEL tar -zcvf '$TMP_TAR' -C '$TMP_ARTIFACT' ."
 GZIP=-$INPUT_COMPRESSION_LEVEL tar -zcvf "$TMP_TAR" -C "$TMP_ARTIFACT" .
 
 # List the actual contents of the archive

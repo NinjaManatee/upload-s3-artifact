@@ -392,4 +392,8 @@ The size of the artifact is denoted in bytes. The displayed artifact size denote
 
 ## The Future
 
-<!-- TODO: list TODOs -->
+1. Implement overwrite parameter (action.yml)
+1. Is this working correctly? Do I want to be using "." here? (scripts/main.sh)
+1. Move to clean up step? (scripts/main.sh)
+1. Testing
+1. Release workflow

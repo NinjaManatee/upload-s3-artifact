@@ -285,7 +285,7 @@ echo "artifact-digest=$ARTIFACT_HASH" >> "$GITHUB_OUTPUT"
 echo "::debug::The presigned URL is $PRESIGNED_URL"
 echo "::debug::The artifact sha256 is $ARTIFACT_HASH"
 
-NUM_BYTES=$(stat --printf="%s" "$TMP_ARTIFACT")
+NUM_BYTES=$(stat --printf="%s" "$TMP_TAR")
 FORMATTED_BYTES=$(numfmt --to=iec "$NUM_BYTES")
 echo "[$INPUT_NAME]($PRESIGNED_URL)&nbsp;&nbsp;&nbsp;&nbsp;$S3URI&nbsp;&nbsp;&nbsp;&nbsp;${FORMATTED_BYTES}B" >> "$GITHUB_STEP_SUMMARY"
 #endregion
